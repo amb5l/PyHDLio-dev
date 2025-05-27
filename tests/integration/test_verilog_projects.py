@@ -21,7 +21,7 @@ class TestVerilogProjects:
     @pytest.mark.slow
     def test_simple_cpu_parsing(self):
         """Test parsing simple_cpu.v - educational CPU implementation"""
-        verilog_file = Path("tests/verilog/simple_cpu.v")
+        verilog_file = Path("tests/fixtures/simple_cpu.v")
         if not verilog_file.exists():
             pytest.skip("simple_cpu.v not found")
 
@@ -66,7 +66,7 @@ class TestVerilogProjects:
     @pytest.mark.slow
     def test_ddr_controller_parsing(self):
         """Test parsing ddr_controller.v - complex memory controller"""
-        verilog_file = Path("tests/verilog/ddr_controller.v")
+        verilog_file = Path("tests/fixtures/ddr_controller.v")
         if not verilog_file.exists():
             pytest.skip("ddr_controller.v not found")
 
@@ -106,7 +106,7 @@ class TestVerilogProjects:
     @pytest.mark.slow
     def test_fifo_uvm_test_parsing(self):
         """Test parsing fifo_uvm_test.sv - SystemVerilog with UVM"""
-        sv_file = Path("tests/verilog/fifo_uvm_test.sv")
+        sv_file = Path("tests/fixtures/fifo_uvm_test.sv")
         if not sv_file.exists():
             pytest.skip("fifo_uvm_test.sv not found")
 
@@ -154,11 +154,11 @@ class TestVerilogProjects:
     def test_verilog_submodule_projects(self):
         """Test parsing real-world Verilog projects from submodules"""
         test_projects = [
-            ("tests/verilog/picorv32", "*.v", "PicoRV32 RISC-V CPU"),
-            ("tests/verilog/VexRiscv", "*.v", "VexRiscv RISC-V CPU"),
-            ("tests/verilog/verilog-axi", "*.v", "Verilog AXI components"),
-            ("tests/verilog/verilog-ethernet", "*.v", "Verilog Ethernet components"),
-            ("tests/verilog/verilog-uart", "*.v", "Verilog UART components"),
+            ("tests/fixtures/picorv32", "*.v", "PicoRV32 RISC-V CPU"),
+            ("tests/fixtures/VexRiscv", "*.v", "VexRiscv RISC-V CPU"),
+            ("tests/fixtures/verilog-axi", "*.v", "Verilog AXI components"),
+            ("tests/fixtures/verilog-ethernet", "*.v", "Verilog Ethernet components"),
+            ("tests/fixtures/verilog-uart", "*.v", "Verilog UART components"),
         ]
 
         results = []
@@ -217,8 +217,8 @@ class TestVerilogProjects:
     def test_verilog_parsing_performance(self):
         """Benchmark Verilog parsing performance"""
         test_files = [
-            ("tests/verilog/simple_cpu.v", "Simple CPU"),
-            ("tests/verilog/ddr_controller.v", "DDR Controller"),
+            ("tests/fixtures/simple_cpu.v", "Simple CPU"),
+            ("tests/fixtures/ddr_controller.v", "DDR Controller"),
         ]
 
         results = []
@@ -265,7 +265,7 @@ class TestVerilogProjects:
     @pytest.mark.slow
     def test_verilog_port_extraction(self):
         """Test port extraction from Verilog modules"""
-        verilog_file = Path("tests/verilog/simple_cpu.v")
+        verilog_file = Path("tests/fixtures/simple_cpu.v")
         if not verilog_file.exists():
             pytest.skip("simple_cpu.v not found")
 

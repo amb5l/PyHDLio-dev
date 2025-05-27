@@ -17,9 +17,24 @@ tests/
 │   ├── test_hdlio_integration.py        # HDLio API integration
 │   ├── test_real_world_projects.py      # Real-world project tests
 │   └── test_verilog_projects.py         # Verilog project tests
-├── fixtures/                            # Test data and fixtures
-├── vhdl/                                # VHDL test files
-└── verilog/                             # Verilog test files
+└── fixtures/                            # Test data and fixtures
+    ├── simple_module.v                  # Simple Verilog module
+    ├── simple_systemverilog.sv          # Simple SystemVerilog interface
+    ├── simple_cpu.v                     # Educational CPU implementation
+    ├── ddr_controller.v                 # Complex DDR memory controller
+    ├── fifo_uvm_test.sv                 # SystemVerilog FIFO with UVM
+    ├── test_vhdl.vhd                    # Simple VHDL test file
+    ├── simple_entity.vhd                # Basic VHDL entity
+    ├── osvvm/                           # OSVVM verification library
+    ├── open-logic/                      # Open Logic VHDL library
+    ├── en_cl_fix/                       # En_cl_fix VHDL library
+    ├── picorv32/                        # PicoRV32 RISC-V CPU
+    ├── VexRiscv/                        # VexRiscv RISC-V CPU
+    ├── verilog-axi/                     # Verilog AXI components
+    ├── verilog-ethernet/                # Verilog Ethernet components
+    ├── verilog-uart/                    # Verilog UART components
+    ├── basejump_stl/                    # BaseJump STL library
+    └── opentitan/                       # OpenTitan hardware
 ```
 
 ## Running Tests

@@ -17,7 +17,7 @@ class TestVerilogParserMinimal:
     @pytest.mark.verilog
     def test_verilog_file_not_found_handling(self, verilog_parser):
         """Test handling of non-existent Verilog files"""
-        non_existent_file = "tests/verilog/non_existent.v"
+        non_existent_file = "tests/fixtures/non_existent.v"
         
         with pytest.raises((FileNotFoundError, Exception)):
             hdl = verilog_parser(non_existent_file)

@@ -18,7 +18,7 @@ class TestRealWorldProjects:
     @pytest.mark.en_cl_fix
     def test_en_cl_fix_parsing(self):
         """Test parsing en_cl_fix library"""
-        project_path = Path("tests/vhdl/en_cl_fix")
+        project_path = Path("tests/fixtures/en_cl_fix")
         if not project_path.exists():
             pytest.skip("en_cl_fix submodule not initialized")
         
@@ -35,10 +35,10 @@ class TestRealWorldProjects:
         for vhdl_file in test_files:
             try:
                 hdl = HDLio(str(vhdl_file), VHDL_2008)
-                design_units = hdl.getDesignUnits()
+                design_units = hdl.get_design_units()
                 if design_units:
                     success_count += 1
-                    entities = [u for u in design_units if u.getVhdlType() == "entity"]
+                    entities = [u for u in design_units if u.get_vhdl_type() == "entity"]
                     entities_found += len(entities)
                     print(f"✓ Parsed {vhdl_file.name}: {len(design_units)} units, {len(entities)} entities")
                 else:
@@ -57,7 +57,7 @@ class TestRealWorldProjects:
     @pytest.mark.osvvm
     def test_osvvm_parsing(self):
         """Test parsing OSVVM library"""
-        project_path = Path("tests/vhdl/osvvm")
+        project_path = Path("tests/fixtures/osvvm")
         if not project_path.exists():
             pytest.skip("osvvm submodule not initialized")
         
@@ -75,11 +75,11 @@ class TestRealWorldProjects:
         for vhdl_file in test_files:
             try:
                 hdl = HDLio(str(vhdl_file), VHDL_2008)
-                design_units = hdl.getDesignUnits()
+                design_units = hdl.get_design_units()
                 if design_units:
                     success_count += 1
-                    entities = [u for u in design_units if u.getVhdlType() == "entity"]
-                    packages = [u for u in design_units if u.getVhdlType() == "package"]
+                    entities = [u for u in design_units if u.get_vhdl_type() == "entity"]
+                    packages = [u for u in design_units if u.get_vhdl_type() == "package"]
                     entities_found += len(entities)
                     packages_found += len(packages)
                     print(f"✓ Parsed {vhdl_file.name}: {len(design_units)} units ({len(entities)} entities, {len(packages)} packages)")
@@ -99,7 +99,7 @@ class TestRealWorldProjects:
     @pytest.mark.open_logic
     def test_open_logic_parsing(self):
         """Test parsing Open Logic library"""
-        project_path = Path("tests/vhdl/open-logic")
+        project_path = Path("tests/fixtures/open-logic")
         if not project_path.exists():
             pytest.skip("open-logic submodule not initialized")
         
@@ -117,11 +117,11 @@ class TestRealWorldProjects:
         for vhdl_file in test_files:
             try:
                 hdl = HDLio(str(vhdl_file), VHDL_2008)
-                design_units = hdl.getDesignUnits()
+                design_units = hdl.get_design_units()
                 if design_units:
                     success_count += 1
-                    entities = [u for u in design_units if u.getVhdlType() == "entity"]
-                    packages = [u for u in design_units if u.getVhdlType() == "package"]
+                    entities = [u for u in design_units if u.get_vhdl_type() == "entity"]
+                    packages = [u for u in design_units if u.get_vhdl_type() == "package"]
                     entities_found += len(entities)
                     packages_found += len(packages)
                     print(f"✓ Parsed {vhdl_file.name}: {len(design_units)} units ({len(entities)} entities, {len(packages)} packages)")
@@ -143,9 +143,9 @@ class TestRealWorldProjects:
     def test_parsing_performance(self):
         """Benchmark parsing performance on real projects"""
         test_cases = [
-                    ("tests/vhdl/en_cl_fix", "*.vhd", 3),
-        ("tests/vhdl/osvvm", "*.vhd", 3),
-        ("tests/vhdl/open-logic", "*.vhd", 3)
+            ("tests/fixtures/en_cl_fix", "*.vhd", 3),
+            ("tests/fixtures/osvvm", "*.vhd", 3),
+            ("tests/fixtures/open-logic", "*.vhd", 3)
         ]
         
         results = []
@@ -167,7 +167,7 @@ class TestRealWorldProjects:
                 try:
                     start_time = time.time()
                     hdl = HDLio(str(vhdl_file), VHDL_2008)
-                    design_units = hdl.getDesignUnits()
+                    design_units = hdl.get_design_units()
                     parse_time = time.time() - start_time
                     
                     # Should parse reasonably quickly (max 5 seconds per file)
@@ -199,9 +199,9 @@ class TestRealWorldProjects:
         """Test port extraction on real-world entities"""
         # Look for entities in all projects
         project_paths = [
-            Path("tests/vhdl/en_cl_fix"),
-            Path("tests/vhdl/osvvm"),
-            Path("tests/vhdl/open-logic")
+            Path("tests/fixtures/en_cl_fix"),
+            Path("tests/fixtures/osvvm"),
+            Path("tests/fixtures/open-logic")
         ]
         
         entities_with_ports = 0
@@ -216,15 +216,15 @@ class TestRealWorldProjects:
             for vhdl_file in vhdl_files:
                 try:
                     hdl = HDLio(str(vhdl_file), VHDL_2008)
-                    design_units = hdl.getDesignUnits()
+                    design_units = hdl.get_design_units()
                     
                     for unit in design_units:
-                        if unit.getVhdlType() == "entity":
-                            ports = unit.getPorts()
+                        if unit.get_vhdl_type() == "entity":
+                            ports = unit.get_ports()
                             if ports:
                                 entities_with_ports += 1
                                 total_ports_found += len(ports)
-                                print(f"✓ Entity {unit.getName()} has {len(ports)} ports")
+                                print(f"✓ Entity {unit.get_name()} has {len(ports)} ports")
                             
                 except Exception as e:
                     # Not all files may parse successfully, that's OK for this test

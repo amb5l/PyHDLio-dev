@@ -1,43 +1,43 @@
 [submodule "PyHDLio"]
 	path = PyHDLio
 	url = https://github.com/amb5l/PyHDLio.git
-    
-[submodule "tests/vhdl/en_cl_fix"]
-	path = tests/vhdl/en_cl_fix
+
+[submodule "tests/fixtures/en_cl_fix"]
+	path = tests/fixtures/en_cl_fix
 	url = https://github.com/enclustra/en_cl_fix.git
 
-[submodule "tests/vhdl/osvvm"]
-	path = tests/vhdl/osvvm
+[submodule "tests/fixtures/osvvm"]
+	path = tests/fixtures/osvvm
 	url = https://github.com/OSVVM/OSVVM.git
 
-[submodule "tests/vhdl/open-logic"]
-	path = tests/vhdl/open-logic
+[submodule "tests/fixtures/open-logic"]
+	path = tests/fixtures/open-logic
 	url = https://github.com/open-logic/open-logic.git
 
-[submodule "tests/verilog/picorv32"]
-	path = tests/verilog/picorv32
+[submodule "tests/fixtures/picorv32"]
+	path = tests/fixtures/picorv32
 	url = https://github.com/cliffordwolf/picorv32.git
 
-[submodule "tests/verilog/VexRiscv"]
-	path = tests/verilog/VexRiscv
+[submodule "tests/fixtures/VexRiscv"]
+	path = tests/fixtures/VexRiscv
 	url = https://github.com/SpinalHDL/VexRiscv.git
 
-[submodule "tests/verilog/opentitan"]
-	path = tests/verilog/opentitan
+[submodule "tests/fixtures/opentitan"]
+	path = tests/fixtures/opentitan
 	url = https://github.com/lowRISC/opentitan.git
 
-[submodule "tests/verilog/basejump_stl"]
-	path = tests/verilog/basejump_stl
+[submodule "tests/fixtures/basejump_stl"]
+	path = tests/fixtures/basejump_stl
 	url = https://github.com/bespoke-silicon-group/basejump_stl.git
 
-[submodule "tests/verilog/verilog-axi"]
-	path = tests/verilog/verilog-axi
+[submodule "tests/fixtures/verilog-axi"]
+	path = tests/fixtures/verilog-axi
 	url = https://github.com/alexforencich/verilog-axi.git
 
-[submodule "tests/verilog/verilog-ethernet"]
-	path = tests/verilog/verilog-ethernet
+[submodule "tests/fixtures/verilog-ethernet"]
+	path = tests/fixtures/verilog-ethernet
 	url = https://github.com/alexforencich/verilog-ethernet.git
 
-[submodule "tests/verilog/verilog-uart"]
-	path = tests/verilog/verilog-uart
+[submodule "tests/fixtures/verilog-uart"]
+	path = tests/fixtures/verilog-uart
 	url = https://github.com/alexforencich/verilog-uart.git
