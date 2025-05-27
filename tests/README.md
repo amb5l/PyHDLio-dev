@@ -71,7 +71,7 @@ python run_tests.py --help             # Show all options
 Tests are automatically marked based on their location and content:
 
 - `unit`: Unit tests in the `unit/` directory
-- `integration`: Integration tests in the `integration/` directory  
+- `integration`: Integration tests in the `integration/` directory
 - `parser`: Parser-related tests
 - `port_groups`: Port grouping functionality tests
 - `vhdl`: VHDL-specific tests
@@ -161,17 +161,16 @@ This generates:
 
 ## Validation
 
-Validate the test environment setup:
-
-```bash
-python validate_tests.py
-```
-
-This checks:
+The test runner automatically validates the environment setup when you run tests. It checks:
 - Local PyHDLio directory access
 - Test structure integrity
 - Import functionality
-- Legacy file cleanup
+
+Simply run the test suite to validate your setup:
+
+```bash
+python run_tests.py
+```
 
 ## Migration from Legacy Tests
 
@@ -196,11 +195,11 @@ If you see import errors for hdlio:
 3. Run `python validate_tests.py` to check the setup
 
 ### Path Issues
-The test suite is configured to use the local PyHDLio directory. If you need to use a different location, update the path in `tests/conftest.py` and `setup_dev_env.py`.
+The test suite is configured to use the local PyHDLio directory. If you need to use a different location, update the path in `tests/conftest.py` and `run_tests.py`.
 
 ### Missing Tests
 If tests are not being discovered:
 1. Ensure test files start with `test_`
 2. Ensure test functions start with `test_`
 3. Check that pytest markers are properly applied
-4. Use `python run_tests.py --list-tests` to see discovered tests 
+4. Use `python run_tests.py --list-tests` to see discovered tests
