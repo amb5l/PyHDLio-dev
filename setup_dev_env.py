@@ -11,14 +11,14 @@ import sys
 from pathlib import Path
 
 def check_pyhdlio_core():
-    """Check if PyHDLio core package is available in adjacent directory."""
+    """Check if PyHDLio core package is available in local directory."""
     current_dir = Path(__file__).parent
-    pyhdlio_core_path = current_dir.parent / "PyHDLio"
+    pyhdlio_core_path = current_dir / "PyHDLio"  # Local PyHDLio directory
     hdlio_package_path = pyhdlio_core_path / "hdlio"
     
     if not pyhdlio_core_path.exists():
         print(f"❌ PyHDLio core directory not found at: {pyhdlio_core_path}")
-        print("   Please ensure PyHDLio and PyHDLio-dev are in the same parent directory.")
+        print("   Please ensure PyHDLio is in the local directory.")
         return False
     
     if not hdlio_package_path.exists():

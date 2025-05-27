@@ -12,22 +12,22 @@ TEST_DIR = Path(__file__).parent
 PROJECT_ROOT = TEST_DIR.parent
 
 def setup_pyhdlio_path():
-    """Setup PyHDLio core path for testing (mirrors setup_dev_env.py logic)."""
+    """Setup PyHDLio core path for testing - uses local PyHDLio directory."""
     current_dir = Path(__file__).parent
-    pyhdlio_core_path = current_dir.parent.parent / "PyHDLio"
+    pyhdlio_core_path = current_dir.parent / "PyHDLio"  # Local PyHDLio directory
     hdlio_package_path = pyhdlio_core_path / "hdlio"
-    
+
     if not pyhdlio_core_path.exists():
         raise ImportError(f"PyHDLio core directory not found at: {pyhdlio_core_path}")
-    
+
     if not hdlio_package_path.exists():
         raise ImportError(f"hdlio package not found at: {hdlio_package_path}")
-    
+
     # Add PyHDLio to Python path if not already there
     pyhdlio_str = str(pyhdlio_core_path)
     if pyhdlio_str not in sys.path:
         sys.path.insert(0, pyhdlio_str)
-    
+
     return pyhdlio_core_path
 
 # Setup the path before importing
@@ -77,11 +77,11 @@ def grouped_vhdl_content():
     -- Clock signals
     clk : in std_logic;
     clk_en : in std_logic;
-    
+
     -- Reset signals
     reset : in std_logic;
     reset_n : in std_logic;
-    
+
     -- Data ports
     data_in : in std_logic;
     data_out : out std_logic;
@@ -98,10 +98,10 @@ def mixed_grouping_vhdl_content():
     -- Control group
     enable : in std_logic;
     ready : out std_logic;
-    
+
     -- Ungrouped port
     status : out std_logic;
-    
+
     -- Another group
     addr : in std_logic;
     data : inout std_logic
@@ -132,20 +132,32 @@ def verilog_files_dir():
 
 
 @pytest.fixture
+def simple_module_file(fixtures_dir):
+    """Path to simple_module.v test file"""
+    return fixtures_dir / "simple_module.v"
+
+
+@pytest.fixture
+def simple_systemverilog_file(fixtures_dir):
+    """Path to simple_systemverilog.sv test file"""
+    return fixtures_dir / "simple_systemverilog.sv"
+
+
+@pytest.fixture
 def simple_cpu_file(verilog_files_dir):
-    """Path to simple_cpu.v test file"""
+    """Path to simple_cpu.v test file (complex, marked as slow)"""
     return verilog_files_dir / "simple_cpu.v"
 
 
 @pytest.fixture
 def ddr_controller_file(verilog_files_dir):
-    """Path to ddr_controller.v test file"""
+    """Path to ddr_controller.v test file (complex, marked as slow)"""
     return verilog_files_dir / "ddr_controller.v"
 
 
 @pytest.fixture
 def fifo_uvm_test_file(verilog_files_dir):
-    """Path to fifo_uvm_test.sv test file"""
+    """Path to fifo_uvm_test.sv test file (complex, marked as slow)"""
     return verilog_files_dir / "fifo_uvm_test.sv"
 
 
@@ -171,7 +183,7 @@ def all_vhdl_versions():
     return [VHDL_2000, VHDL_2008, VHDL_2019]
 
 
-@pytest.fixture(scope="session") 
+@pytest.fixture(scope="session")
 def all_verilog_versions():
     """List of all supported Verilog versions"""
     return [VERILOG_1995, VERILOG_2001, VERILOG_2005]
@@ -198,7 +210,7 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.unit)
         elif "integration" in str(item.fspath):
             item.add_marker(pytest.mark.integration)
-        
+
         # Add markers based on test name patterns
         if "port_group" in item.name:
             item.add_marker(pytest.mark.port_groups)
@@ -209,4 +221,4 @@ def pytest_collection_modifyitems(config, items):
         if "systemverilog" in item.name.lower():
             item.add_marker(pytest.mark.systemverilog)
         if "parser" in item.name.lower():
-            item.add_marker(pytest.mark.parser) 
+            item.add_marker(pytest.mark.parser)

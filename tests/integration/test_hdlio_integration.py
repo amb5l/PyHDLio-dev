@@ -22,13 +22,13 @@ class TestHDLioIntegration:
         hdl = HDLio(str(vhdl_file), VHDL_2008)
         
         # Get design units
-        design_units = hdl.getDesignUnits()
+        design_units = hdl.get_design_units()
         assert len(design_units) >= 1
         
         # Find the entity
         entity = None
         for unit in design_units:
-            if unit.getVhdlType() == "entity":
+            if unit.get_vhdl_type() == "entity":
                 entity = unit
                 break
         
@@ -36,23 +36,23 @@ class TestHDLioIntegration:
         assert entity.name == "grouped_test"
         
         # Get port groups
-        port_groups = entity.getPortGroups()
+        port_groups = entity.get_port_groups()
         assert len(port_groups) >= 3
         
         # Verify we can access all ports
         total_ports = 0
         for port_group in port_groups:
-            group_name = port_group.getName()
+            group_name = port_group.get_name()
             assert isinstance(group_name, str)
             assert len(group_name) > 0
             
-            ports = port_group.getPorts()
+            ports = port_group.get_ports()
             total_ports += len(ports)
             
             for port in ports:
-                assert isinstance(port.getName(), str)
-                assert isinstance(port.getType(), str)
-                assert isinstance(port.getDirection(), str)
+                assert isinstance(port.get_name(), str)
+                assert isinstance(port.get_type(), str)
+                assert isinstance(port.get_direction(), str)
         
         assert total_ports >= 5  # Should have several ports
 
@@ -65,11 +65,11 @@ class TestHDLioIntegration:
         
         # Test with string path
         hdl1 = HDLio(str(simple_vhdl_file), VHDL_2008)
-        design_units1 = hdl1.getDesignUnits()
+        design_units1 = hdl1.get_design_units()
         
         # Test with Path object
         hdl2 = HDLio(simple_vhdl_file, VHDL_2008)
-        design_units2 = hdl2.getDesignUnits()
+        design_units2 = hdl2.get_design_units()
         
         # Results should be consistent
         assert len(design_units1) == len(design_units2)
@@ -79,7 +79,7 @@ class TestHDLioIntegration:
             entity2 = design_units2[0]
             
             assert entity1.name == entity2.name
-            assert entity1.getVhdlType() == entity2.getVhdlType()
+            assert entity1.get_vhdl_type() == entity2.get_vhdl_type()
 
     @pytest.mark.integration
     def test_real_world_vhdl_file(self, complex_vhdl_file):
@@ -88,7 +88,7 @@ class TestHDLioIntegration:
             pytest.skip("Complex VHDL file not found in fixtures")
         
         hdl = HDLio(str(complex_vhdl_file), VHDL_2008)
-        design_units = hdl.getDesignUnits()
+        design_units = hdl.get_design_units()
         
         # Should be able to parse without errors
         assert isinstance(design_units, list)
@@ -97,8 +97,8 @@ class TestHDLioIntegration:
         # Check that we can access all design units
         for unit in design_units:
             assert hasattr(unit, 'name')
-            assert hasattr(unit, 'getVhdlType')
-            unit_type = unit.getVhdlType()
+            assert hasattr(unit, 'get_vhdl_type')
+            unit_type = unit.get_vhdl_type()
             assert unit_type in ["entity", "architecture", "package", "package_body", "configuration"]
 
     @pytest.mark.integration
@@ -116,7 +116,7 @@ class TestHDLioIntegration:
         start_time = time.time()
         
         hdl = HDLio(str(vhdl_file), VHDL_2008)
-        design_units = hdl.getDesignUnits()
+        design_units = hdl.get_design_units()
         
         end_time = time.time()
         parse_time = end_time - start_time
@@ -126,10 +126,10 @@ class TestHDLioIntegration:
         
         assert len(design_units) >= 1
         entity = design_units[0]
-        port_groups = entity.getPortGroups()
+        port_groups = entity.get_port_groups()
         
         # Should have parsed all ports
-        total_ports = sum(len(group.getPorts()) for group in port_groups)
+        total_ports = sum(len(group.get_ports()) for group in port_groups)
         assert total_ports >= 40  # Should parse most ports
 
     @pytest.mark.integration
@@ -163,7 +163,7 @@ class TestHDLioIntegration:
         
         # Should not crash and should parse what it can
         hdl = HDLio(str(vhdl_file), VHDL_2008)
-        design_units = hdl.getDesignUnits()
+        design_units = hdl.get_design_units()
         
         # Should find at least some design units
         assert isinstance(design_units, list)

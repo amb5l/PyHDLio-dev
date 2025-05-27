@@ -56,7 +56,7 @@ end architecture behavioral;
         # Test with both comprehensive modes
         for comprehensive in [False, True]:
             hdl = HDLio(str(temp_file), vhdl_version, comprehensive=comprehensive)
-            design_units = hdl.getDesignUnits()
+            design_units = hdl.get_design_units()
 
             # Should parse successfully
             assert len(design_units) >= 1
@@ -64,7 +64,7 @@ end architecture behavioral;
             # Should find the entity
             entity = None
             for unit in design_units:
-                if unit.getVhdlType() == "entity":
+                if unit.get_vhdl_type() == "entity":
                     entity = unit
                     break
 
@@ -72,9 +72,9 @@ end architecture behavioral;
             assert entity.name == "simple_entity"
             
             # Check ports
-            if hasattr(entity, 'getPortGroups'):
-                port_groups = entity.getPortGroups()
-                total_ports = sum(len(group.getPorts()) for group in port_groups)
+            if hasattr(entity, 'get_port_groups'):
+                port_groups = entity.get_port_groups()
+                total_ports = sum(len(group.get_ports()) for group in port_groups)
                 assert total_ports >= 3  # Should have at least some ports parsed
 
     @pytest.mark.unit
@@ -94,7 +94,7 @@ end entity;
         results = []
         for version in [VHDL_1993, VHDL_2000, VHDL_2008, VHDL_2019]:
             hdl = HDLio(str(temp_file), version)
-            design_units = hdl.getDesignUnits()
+            design_units = hdl.get_design_units()
             results.append(len(design_units))
 
         # All versions should have the same number of design units
@@ -164,20 +164,20 @@ end architecture rtl;
             temp_file.write_text(vhdl_content)
 
             hdl = HDLio(str(temp_file), vhdl_version)
-            design_units = hdl.getDesignUnits()
+            design_units = hdl.get_design_units()
 
             # Should parse successfully
             assert len(design_units) >= 1
 
             # Find entity and verify port groups
-            entity = next((unit for unit in design_units if unit.getVhdlType() == "entity"), None)
+            entity = next((unit for unit in design_units if unit.get_vhdl_type() == "entity"), None)
             assert entity is not None
             assert entity.name == "complex_entity"
             
             # Check port grouping functionality
-            if hasattr(entity, 'getPortGroups'):
-                port_groups = entity.getPortGroups()
-                group_names = [group.getName() for group in port_groups]
+            if hasattr(entity, 'get_port_groups'):
+                port_groups = entity.get_port_groups()
+                group_names = [group.get_name() for group in port_groups]
                 
                 # Should identify comment-based groups
                 assert len(port_groups) >= 2

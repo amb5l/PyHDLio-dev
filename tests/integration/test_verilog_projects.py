@@ -18,6 +18,7 @@ class TestVerilogProjects:
 
     @pytest.mark.integration
     @pytest.mark.verilog
+    @pytest.mark.slow
     def test_simple_cpu_parsing(self):
         """Test parsing simple_cpu.v - educational CPU implementation"""
         verilog_file = Path("tests/verilog/simple_cpu.v")
@@ -28,7 +29,7 @@ class TestVerilogProjects:
         for standard in [VERILOG_2001, VERILOG_2005]:
             try:
                 hdl = HDLio(str(verilog_file), standard)
-                design_units = hdl.getDesignUnits()
+                design_units = hdl.get_design_units()
 
                 assert design_units is not None, f"Failed to parse with {standard}"
 
@@ -62,6 +63,7 @@ class TestVerilogProjects:
 
     @pytest.mark.integration
     @pytest.mark.verilog
+    @pytest.mark.slow
     def test_ddr_controller_parsing(self):
         """Test parsing ddr_controller.v - complex memory controller"""
         verilog_file = Path("tests/verilog/ddr_controller.v")
@@ -71,7 +73,7 @@ class TestVerilogProjects:
         # DDR controller is more complex, test with Verilog 2005
         try:
             hdl = HDLio(str(verilog_file), VERILOG_2005)
-            design_units = hdl.getDesignUnits()
+            design_units = hdl.get_design_units()
 
             assert design_units is not None, "Failed to parse ddr_controller.v"
 
@@ -101,6 +103,7 @@ class TestVerilogProjects:
 
     @pytest.mark.integration
     @pytest.mark.systemverilog
+    @pytest.mark.slow
     def test_fifo_uvm_test_parsing(self):
         """Test parsing fifo_uvm_test.sv - SystemVerilog with UVM"""
         sv_file = Path("tests/verilog/fifo_uvm_test.sv")
@@ -111,7 +114,7 @@ class TestVerilogProjects:
         for standard in [SYSTEMVERILOG_2005, SYSTEMVERILOG_2012]:
             try:
                 hdl = HDLio(str(sv_file), standard)
-                design_units = hdl.getDesignUnits()
+                design_units = hdl.get_design_units()
 
                 assert design_units is not None, f"Failed to parse with {standard}"
 
@@ -147,6 +150,7 @@ class TestVerilogProjects:
     @pytest.mark.integration
     @pytest.mark.verilog
     @pytest.mark.real_world
+    @pytest.mark.slow
     def test_verilog_submodule_projects(self):
         """Test parsing real-world Verilog projects from submodules"""
         test_projects = [
@@ -176,7 +180,7 @@ class TestVerilogProjects:
             for verilog_file in verilog_files:
                 try:
                     hdl = HDLio(str(verilog_file), VERILOG_2005)
-                    design_units = hdl.getDesignUnits()
+                    design_units = hdl.get_design_units()
                     if design_units:
                         success_count += 1
                         modules = design_units
@@ -228,7 +232,7 @@ class TestVerilogProjects:
             try:
                 start_time = time.time()
                 hdl = HDLio(str(verilog_file), VERILOG_2005)
-                design_units = hdl.getDesignUnits()
+                design_units = hdl.get_design_units()
                 parse_time = time.time() - start_time
 
                 # Should parse reasonably quickly (max 2 seconds for these files)
@@ -258,6 +262,7 @@ class TestVerilogProjects:
 
     @pytest.mark.integration
     @pytest.mark.verilog
+    @pytest.mark.slow
     def test_verilog_port_extraction(self):
         """Test port extraction from Verilog modules"""
         verilog_file = Path("tests/verilog/simple_cpu.v")
@@ -266,7 +271,7 @@ class TestVerilogProjects:
 
         try:
             hdl = HDLio(str(verilog_file), VERILOG_2005)
-            design_units = hdl.getDesignUnits()
+            design_units = hdl.get_design_units()
 
             assert design_units is not None, "Failed to parse simple_cpu.v"
 
@@ -279,18 +284,18 @@ class TestVerilogProjects:
 
             if cpu_module is not None:
                 # Test port extraction if supported
-                if hasattr(cpu_module, 'getPortGroups'):
-                    port_groups = cpu_module.getPortGroups()
+                if hasattr(cpu_module, 'get_port_groups'):
+                    port_groups = cpu_module.get_port_groups()
                     print(f"Found {len(port_groups)} port groups in simple_cpu module")
 
                     # Extract all ports from all groups
                     all_ports = []
                     for group in port_groups:
-                        all_ports.extend(group.getPorts())
+                        all_ports.extend(group.get_ports())
 
                     if all_ports:
                         # Verify some expected ports exist
-                        port_names = [port.getName() for port in all_ports if hasattr(port, 'getName')]
+                        port_names = [port.get_name() for port in all_ports if hasattr(port, 'get_name')]
                         expected_ports = ['clk', 'reset', 'data_in', 'data_out']
 
                         for expected_port in expected_ports:
