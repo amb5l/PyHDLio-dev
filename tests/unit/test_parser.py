@@ -15,7 +15,7 @@ class TestVHDLParser:
         """Test parsing a simple VHDL entity"""
         hdl = hdlio_parser(str(temp_vhdl_file))
         design_units = hdl.get_design_units()
-        
+
         assert len(design_units) == 1
         entity = design_units[0]
         assert entity.get_vhdl_type() == "entity"
@@ -27,16 +27,16 @@ class TestVHDLParser:
         """Test parsing entity with ports"""
         if not simple_vhdl_file.exists():
             pytest.skip("Simple VHDL file not found")
-        
+
         hdl = hdlio_parser(str(simple_vhdl_file))
         design_units = hdl.get_design_units()
-        
+
         assert len(design_units) >= 1
         entity = design_units[0]
-        
+
         port_groups = entity.get_port_groups()
         assert len(port_groups) >= 1
-        
+
         # Check that we have some ports
         total_ports = sum(len(group.get_ports()) for group in port_groups)
         assert total_ports >= 1
@@ -47,11 +47,11 @@ class TestVHDLParser:
         """Test parsing with different VHDL language versions"""
         temp_file = tmp_path / "version_test.vhd"
         temp_file.write_text(simple_vhdl_content)
-        
+
         for version in all_vhdl_versions:
             hdl = HDLio(str(temp_file), version)
             design_units = hdl.get_design_units()
-            
+
             # Should be able to parse with any version
             assert len(design_units) >= 1
 
@@ -61,13 +61,13 @@ class TestVHDLParser:
         """Test parsing a more complex VHDL file"""
         if not complex_vhdl_file.exists():
             pytest.skip("Complex VHDL file not found")
-        
+
         hdl = hdlio_parser(str(complex_vhdl_file))
         design_units = hdl.get_design_units()
-        
+
         # Should find at least one design unit
         assert len(design_units) >= 1
-        
+
         # Check for entity
         entities = [unit for unit in design_units if unit.get_vhdl_type() == "entity"]
         assert len(entities) >= 1
@@ -77,7 +77,7 @@ class TestVHDLParser:
         """Test handling of invalid files"""
         # Test non-existent file
         non_existent = tmp_path / "does_not_exist.vhd"
-        
+
         with pytest.raises((FileNotFoundError, IOError)):
             hdlio_parser(str(non_existent))
 
@@ -91,14 +91,14 @@ class TestVHDLParser:
             data : out std_logic
           );
         end entity bad_entity;"""
-        
+
         temp_file = tmp_path / "malformed.vhd"
         temp_file.write_text(malformed_vhdl)
-        
+
         # Parser should not crash, but may have parsing errors
         hdl = hdlio_parser(str(temp_file))
         design_units = hdl.get_design_units()
-        
+
         # May succeed with partial parsing or fail gracefully
         assert isinstance(design_units, list)
 
@@ -114,24 +114,24 @@ class TestVHDLParser:
             buffer_port : buffer std_logic
           );
         end entity direction_test;"""
-        
+
         temp_file = tmp_path / "direction_test.vhd"
         temp_file.write_text(direction_test)
-        
+
         hdl = hdlio_parser(str(temp_file))
         design_units = hdl.get_design_units()
-        
+
         assert len(design_units) >= 1
         entity = design_units[0]
-        
+
         port_groups = entity.get_port_groups()
         all_ports = []
         for group in port_groups:
             all_ports.extend(group.get_ports())
-        
+
         # Should have parsed multiple ports
         assert len(all_ports) >= 2
-        
+
         # Check directions are parsed correctly
         directions = [port.get_direction() for port in all_ports]
         assert any(direction == "in" for direction in directions)
@@ -148,24 +148,24 @@ class TestVHDLParser:
             boolean_port : in boolean
           );
         end entity type_test;"""
-        
+
         temp_file = tmp_path / "type_test.vhd"
         temp_file.write_text(type_test)
-        
+
         hdl = hdlio_parser(str(temp_file))
         design_units = hdl.get_design_units()
-        
+
         assert len(design_units) >= 1
         entity = design_units[0]
-        
+
         port_groups = entity.get_port_groups()
         all_ports = []
         for group in port_groups:
             all_ports.extend(group.get_ports())
-        
+
         # Should have parsed multiple ports with different types
         assert len(all_ports) >= 2
-        
+
         types = [port.get_type() for port in all_ports]
         assert any("std_logic" in port_type for port_type in types)
-        assert any("integer" in port_type for port_type in types) 
+        assert any("integer" in port_type for port_type in types)

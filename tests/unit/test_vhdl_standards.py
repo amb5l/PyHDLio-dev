@@ -70,7 +70,7 @@ end architecture behavioral;
 
             assert entity is not None
             assert entity.name == "simple_entity"
-            
+
             # Check ports
             if hasattr(entity, 'get_port_groups'):
                 port_groups = entity.get_port_groups()
@@ -118,7 +118,7 @@ entity complex_entity is
         -- Clock and Reset
         clk     : in  std_logic;
         reset_n : in  std_logic;
-        
+
         -- Data Interface
         data_in  : in  std_logic_vector(WIDTH-1 downto 0);
         data_out : out std_logic_vector(WIDTH-1 downto 0);
@@ -132,7 +132,7 @@ architecture rtl of complex_entity is
     type state_type is (IDLE, ACTIVE, DONE);
     signal state : state_type;
 begin
-    
+
     process(clk, reset_n)
     begin
         if reset_n = '0' then
@@ -152,10 +152,10 @@ begin
             end case;
         end if;
     end process;
-    
+
     data_out <= reg_data;
     ready <= '1' when state = DONE else '0';
-    
+
 end architecture rtl;
         """
 
@@ -173,12 +173,12 @@ end architecture rtl;
             entity = next((unit for unit in design_units if unit.get_vhdl_type() == "entity"), None)
             assert entity is not None
             assert entity.name == "complex_entity"
-            
+
             # Check port grouping functionality
             if hasattr(entity, 'get_port_groups'):
                 port_groups = entity.get_port_groups()
                 group_names = [group.get_name() for group in port_groups]
-                
+
                 # Should identify comment-based groups
                 assert len(port_groups) >= 2
                 # Should find our comment groups
