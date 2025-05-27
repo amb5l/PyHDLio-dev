@@ -1,0 +1,48 @@
+[flake8]
+# PEP-8 checking configuration for PyHDLio
+# Excludes PLY and submodules as requested
+
+# Exclude directories and files
+exclude =
+    # PLY-related directories and files
+    */submodules/*,
+    */ply/*,
+    # Standard exclusions
+    .git,
+    __pycache__,
+    .pytest_cache,
+    build,
+    dist,
+    *.egg-info,
+    # Test fixtures (external code)
+    tests/fixtures/*
+
+# Maximum line length (PEP-8 standard)
+max-line-length = 79
+
+# Select specific error codes to check
+select =
+    # Pycodestyle errors
+    E,
+    # Pycodestyle warnings
+    W,
+    # Pyflakes errors
+    F
+
+# Ignore specific error codes that might be too strict for this codebase
+ignore =
+    # Line too long (we handle this with max-line-length)
+    E501,
+    # Whitespace before ':' (can be useful for alignment)
+    E203,
+    # Line break before binary operator (conflicts with newer PEP-8)
+    W503
+
+# Show source code for each error
+show-source = True
+
+# Show pep8 violation statistics
+statistics = True
+
+# Count errors and warnings
+count = True
