@@ -20,7 +20,32 @@ import argparse
 from pathlib import Path
 
 # Setup development environment to use local PyHDLio core
-from setup_dev_env import check_pyhdlio_core
+def check_pyhdlio_core():
+    """Check if PyHDLio core package is available in local directory."""
+    current_dir = Path(__file__).parent
+    pyhdlio_core_path = current_dir / "PyHDLio"  # Local PyHDLio directory
+    hdlio_package_path = pyhdlio_core_path / "hdlio"
+    
+    if not pyhdlio_core_path.exists():
+        print(f"❌ PyHDLio core directory not found at: {pyhdlio_core_path}")
+        print("   Please ensure PyHDLio is in the local directory.")
+        return False
+    
+    if not hdlio_package_path.exists():
+        print(f"❌ hdlio package not found at: {hdlio_package_path}")
+        print("   Please ensure PyHDLio contains the hdlio package.")
+        return False
+    
+    print(f"✅ Found PyHDLio core at: {pyhdlio_core_path}")
+    print(f"✅ Found hdlio package at: {hdlio_package_path}")
+    
+    # Add PyHDLio to Python path if not already there
+    pyhdlio_str = str(pyhdlio_core_path)
+    if pyhdlio_str not in sys.path:
+        sys.path.insert(0, pyhdlio_str)
+        print(f"✅ Added {pyhdlio_str} to Python path")
+    
+    return True
 
 
 def run_command(cmd, description):
