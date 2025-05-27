@@ -1,3 +1,7 @@
+[submodule "PyHDLio"]
+	path = PyHDLio
+	url = https://github.com/amb5l/PyHDLio.git
+    
 [submodule "tests/vhdl/en_cl_fix"]
 	path = tests/vhdl/en_cl_fix
 	url = https://github.com/enclustra/en_cl_fix.git
