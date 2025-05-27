@@ -1,0 +1,39 @@
+[submodule "tests/vhdl/en_cl_fix"]
+	path = tests/vhdl/en_cl_fix
+	url = https://github.com/enclustra/en_cl_fix.git
+
+[submodule "tests/vhdl/osvvm"]
+	path = tests/vhdl/osvvm
+	url = https://github.com/OSVVM/OSVVM.git
+
+[submodule "tests/vhdl/open-logic"]
+	path = tests/vhdl/open-logic
+	url = https://github.com/open-logic/open-logic.git
+
+[submodule "tests/verilog/picorv32"]
+	path = tests/verilog/picorv32
+	url = https://github.com/cliffordwolf/picorv32.git
+
+[submodule "tests/verilog/VexRiscv"]
+	path = tests/verilog/VexRiscv
+	url = https://github.com/SpinalHDL/VexRiscv.git
+
+[submodule "tests/verilog/opentitan"]
+	path = tests/verilog/opentitan
+	url = https://github.com/lowRISC/opentitan.git
+
+[submodule "tests/verilog/basejump_stl"]
+	path = tests/verilog/basejump_stl
+	url = https://github.com/bespoke-silicon-group/basejump_stl.git
+
+[submodule "tests/verilog/verilog-axi"]
+	path = tests/verilog/verilog-axi
+	url = https://github.com/alexforencich/verilog-axi.git
+
+[submodule "tests/verilog/verilog-ethernet"]
+	path = tests/verilog/verilog-ethernet
+	url = https://github.com/alexforencich/verilog-ethernet.git
+
+[submodule "tests/verilog/verilog-uart"]
+	path = tests/verilog/verilog-uart
+	url = https://github.com/alexforencich/verilog-uart.git
