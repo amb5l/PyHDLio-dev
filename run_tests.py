@@ -45,6 +45,9 @@ def main():
     parser.add_argument("--integration", action="store_true", help="Run integration tests only")
     parser.add_argument("--port-groups", action="store_true", help="Run port grouping tests only")
     parser.add_argument("--parser", action="store_true", help="Run parser tests only")
+    parser.add_argument("--vhdl", action="store_true", help="Run VHDL-specific tests only")
+    parser.add_argument("--verilog", action="store_true", help="Run Verilog-specific tests only")
+    parser.add_argument("--systemverilog", action="store_true", help="Run SystemVerilog-specific tests only")
     parser.add_argument("--slow", action="store_true", help="Include slow tests")
     parser.add_argument("--coverage", action="store_true", help="Run with coverage reporting")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
@@ -78,6 +81,12 @@ def main():
         cmd.extend(["-m", "port_groups"])
     elif args.parser:
         cmd.extend(["-m", "parser"])
+    elif args.vhdl:
+        cmd.extend(["-m", "vhdl"])
+    elif args.verilog:
+        cmd.extend(["-m", "verilog"])
+    elif args.systemverilog:
+        cmd.extend(["-m", "systemverilog"])
     elif args.real_world:
         cmd.extend(["-m", "real_world"])
     elif args.performance:
@@ -87,8 +96,15 @@ def main():
         if not args.slow:
             cmd.extend(["-m", "not slow"])
     
-    # Add tests directory
-    cmd.append("tests/")
+    # Add tests directory, but exclude problematic submodule directories for Verilog tests
+    if args.verilog or args.systemverilog:
+        # For Verilog tests, specify exact test files to avoid submodule collection issues
+        cmd.extend([
+            "tests/unit/test_verilog_parser.py",
+            "tests/integration/test_verilog_projects.py"
+        ])
+    else:
+        cmd.append("tests/")
     
     # Run the tests
     success = run_command(cmd, "Test Suite")

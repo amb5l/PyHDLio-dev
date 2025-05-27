@@ -10,6 +10,28 @@ from pathlib import Path
 # Add hdlio to the path for testing
 TEST_DIR = Path(__file__).parent
 PROJECT_ROOT = TEST_DIR.parent
+
+def setup_pyhdlio_path():
+    """Setup PyHDLio core path for testing (mirrors setup_dev_env.py logic)."""
+    current_dir = Path(__file__).parent
+    pyhdlio_core_path = current_dir.parent.parent / "PyHDLio"
+    hdlio_package_path = pyhdlio_core_path / "hdlio"
+    
+    if not pyhdlio_core_path.exists():
+        raise ImportError(f"PyHDLio core directory not found at: {pyhdlio_core_path}")
+    
+    if not hdlio_package_path.exists():
+        raise ImportError(f"hdlio package not found at: {hdlio_package_path}")
+    
+    # Add PyHDLio to Python path if not already there
+    pyhdlio_str = str(pyhdlio_core_path)
+    if pyhdlio_str not in sys.path:
+        sys.path.insert(0, pyhdlio_str)
+    
+    return pyhdlio_core_path
+
+# Setup the path before importing
+setup_pyhdlio_path()
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from hdlio import HDLio, VHDL_2008, VHDL_2000, VHDL_2019
@@ -103,6 +125,46 @@ def hdlio_parser():
     return _create_parser
 
 
+@pytest.fixture
+def verilog_files_dir():
+    """Path to Verilog test files directory"""
+    return TEST_DIR / "verilog"
+
+
+@pytest.fixture
+def simple_cpu_file(verilog_files_dir):
+    """Path to simple_cpu.v test file"""
+    return verilog_files_dir / "simple_cpu.v"
+
+
+@pytest.fixture
+def ddr_controller_file(verilog_files_dir):
+    """Path to ddr_controller.v test file"""
+    return verilog_files_dir / "ddr_controller.v"
+
+
+@pytest.fixture
+def fifo_uvm_test_file(verilog_files_dir):
+    """Path to fifo_uvm_test.sv test file"""
+    return verilog_files_dir / "fifo_uvm_test.sv"
+
+
+@pytest.fixture
+def verilog_parser():
+    """HDLio parser instance for Verilog 2005"""
+    def _create_parser(filename, language=VERILOG_2005):
+        return HDLio(filename, language)
+    return _create_parser
+
+
+@pytest.fixture
+def systemverilog_parser():
+    """HDLio parser instance for SystemVerilog 2012"""
+    def _create_parser(filename, language=SYSTEMVERILOG_2012):
+        return HDLio(filename, language)
+    return _create_parser
+
+
 @pytest.fixture(scope="session")
 def all_vhdl_versions():
     """List of all supported VHDL versions"""
@@ -142,5 +204,9 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.port_groups)
         if "vhdl" in item.name.lower():
             item.add_marker(pytest.mark.vhdl)
+        if "verilog" in item.name.lower():
+            item.add_marker(pytest.mark.verilog)
+        if "systemverilog" in item.name.lower():
+            item.add_marker(pytest.mark.systemverilog)
         if "parser" in item.name.lower():
             item.add_marker(pytest.mark.parser) 
