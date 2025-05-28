@@ -153,6 +153,16 @@ def all_systemverilog_version_files(lrm_fixtures_dir):
     }
 
 
+@pytest.fixture(scope="session")
+def all_language_version_files(all_vhdl_version_files, all_verilog_version_files, all_systemverilog_version_files):
+    """List of all language version fixture files"""
+    all_files = []
+    all_files.extend(all_vhdl_version_files.values())
+    all_files.extend(all_verilog_version_files.values())
+    all_files.extend(all_systemverilog_version_files.values())
+    return all_files
+
+
 @pytest.fixture
 def simple_vhdl_file(fixtures_dir):
     """Path to simple VHDL test file"""
