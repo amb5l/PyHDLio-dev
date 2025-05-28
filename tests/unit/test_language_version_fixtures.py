@@ -98,16 +98,9 @@ class TestVerilogLanguageVersionFixtures:
         parser = VerilogParser(language)
         try:
             result = parser.parse(str(fixture_path), content)
-            # For now, we expect parsing to fail due to parser limitations
-            # This test documents the current state and will pass when parser improves
-            if result is None:
-                pytest.skip(f"Verilog {expected_version} parser has known limitations - skipping until parser is enhanced")
-            else:
-                # If it actually parses, that's great!
-                assert result is not None, f"Verilog {expected_version} fixture should parse successfully"
+            assert result is not None, f"Verilog {expected_version} fixture should parse successfully"
         except Exception as e:
-            # Expected for now due to parser limitations
-            pytest.skip(f"Verilog {expected_version} parsing failed due to known parser limitations: {str(e)}")
+            pytest.fail(f"Verilog {expected_version} parsing failed: {str(e)}")
 
 
 class TestSystemVerilogLanguageVersionFixtures:
@@ -154,14 +147,9 @@ class TestSystemVerilogLanguageVersionFixtures:
         parser = VerilogParser(language)
         try:
             result = parser.parse(str(fixture_path), content)
-            # For now, we expect parsing to fail due to parser limitations
-            if result is None:
-                pytest.skip(f"SystemVerilog {expected_version} parser has known limitations - skipping until parser is enhanced")
-            else:
-                assert result is not None, f"SystemVerilog {expected_version} fixture should parse successfully"
+            assert result is not None, f"SystemVerilog {expected_version} fixture should parse successfully"
         except Exception as e:
-            # Expected for now due to parser limitations
-            pytest.skip(f"SystemVerilog {expected_version} parsing failed due to known parser limitations: {str(e)}")
+            pytest.fail(f"SystemVerilog {expected_version} parsing failed: {str(e)}")
 
 
 class TestLanguageVersionFixtureCollections:

@@ -322,6 +322,24 @@ def pytest_configure(config):
 
 def pytest_collection_modifyitems(config, items):
     """Automatically mark tests based on their location"""
+    # Ensure all marks are registered
+    marks_to_register = [
+        "unit: Unit tests",
+        "integration: Integration tests", 
+        "parser: Parser tests",
+        "port_groups: Port grouping tests",
+        "vhdl: VHDL-specific tests",
+        "verilog: Verilog-specific tests", 
+        "systemverilog: SystemVerilog-specific tests"
+    ]
+    
+    for mark_def in marks_to_register:
+        try:
+            config.addinivalue_line("markers", mark_def)
+        except ValueError:
+            # Mark already registered
+            pass
+    
     for item in items:
         # Add markers based on test file location
         if "unit" in str(item.fspath):
