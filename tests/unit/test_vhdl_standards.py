@@ -184,3 +184,97 @@ end architecture rtl;
                 # Should find our comment groups
                 assert any("Clock" in name for name in group_names)
                 assert any("Data" in name for name in group_names)
+
+    @pytest.mark.unit
+    @pytest.mark.vhdl
+    def test_vhdl_lrm_fixtures_parsing(self, all_vhdl_version_files):
+        """Test parsing of VHDL LRM (Language Reference Manual) fixtures"""
+        for version, file_path in all_vhdl_version_files.items():
+            if not file_path.exists():
+                pytest.skip(f"VHDL LRM fixture {file_path} not found")
+            
+            # Test with both comprehensive modes
+            for comprehensive in [False, True]:
+                hdl = HDLio(str(file_path), version, comprehensive=comprehensive)
+                design_units = hdl.get_design_units()
+                
+                # Should parse successfully and find multiple design units
+                assert len(design_units) >= 1, f"No design units found in {file_path} with {version}"
+                
+                # Should find at least one entity
+                entities = [unit for unit in design_units if unit.get_vhdl_type() == "entity"]
+                assert len(entities) >= 1, f"No entities found in {file_path} with {version}"
+                
+                # Check that entity has a name
+                for entity in entities:
+                    assert hasattr(entity, 'name'), f"Entity in {file_path} missing name attribute"
+                    assert entity.name is not None, f"Entity in {file_path} has None name"
+
+    @pytest.mark.unit
+    @pytest.mark.vhdl
+    def test_vhdl_lrm_fixtures_comprehensive_features(self, all_vhdl_version_files):
+        """Test that VHDL LRM fixtures contain comprehensive language features"""
+        for version, file_path in all_vhdl_version_files.items():
+            if not file_path.exists():
+                pytest.skip(f"VHDL LRM fixture {file_path} not found")
+            
+            # Read file content to check for expected constructs
+            with open(file_path, 'r') as f:
+                content = f.read()
+            
+            # Should contain various VHDL constructs
+            expected_constructs = [
+                'entity', 'architecture', 'package', 'port', 'signal'
+            ]
+            
+            for construct in expected_constructs:
+                assert construct in content.lower(), \
+                    f"VHDL construct '{construct}' not found in {file_path}"
+            
+            # Version-specific features
+            if version == VHDL_2008:
+                # VHDL-2008 specific features
+                version_features = ['process (all)', 'ufixed']  # Simplified sensitivity list, fixed-point
+                for feature in version_features:
+                    if feature not in content:
+                        print(f"Warning: VHDL-2008 feature '{feature}' not found in {file_path}")
+            
+            elif version == VHDL_2019:
+                # VHDL-2019 might have additional features
+                pass  # Add specific checks when available
+
+    @pytest.mark.unit
+    @pytest.mark.vhdl
+    def test_vhdl_lrm_fixtures_cross_version_compatibility(self, all_vhdl_version_files, all_vhdl_versions):
+        """Test parsing VHDL LRM fixtures with different parser versions"""
+        compatibility_matrix = {}
+        
+        for fixture_version, file_path in all_vhdl_version_files.items():
+            if not file_path.exists():
+                continue
+                
+            compatibility_matrix[fixture_version] = {}
+            
+            for parser_version in all_vhdl_versions:
+                try:
+                    hdl = HDLio(str(file_path), parser_version)
+                    design_units = hdl.get_design_units()
+                    compatibility_matrix[fixture_version][parser_version] = {
+                        'success': True,
+                        'design_units': len(design_units)
+                    }
+                except Exception as e:
+                    compatibility_matrix[fixture_version][parser_version] = {
+                        'success': False,
+                        'error': str(e)
+                    }
+        
+        # Log compatibility results
+        print("\nVHDL LRM Fixture Compatibility Matrix:")
+        for fixture_version, results in compatibility_matrix.items():
+            print(f"\nFixture {fixture_version}:")
+            for parser_version, result in results.items():
+                if result['success']:
+                    print(f"  {parser_version}: ✓ ({result['design_units']} units)")
+                else:
+                    print(f"  {parser_version}: ✗ ({result['error'][:50]}...)")

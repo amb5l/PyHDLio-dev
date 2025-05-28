@@ -34,15 +34,123 @@ def setup_pyhdlio_path():
 setup_pyhdlio_path()
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from hdlio import HDLio, VHDL_2008, VHDL_2000, VHDL_2019
+from hdlio import HDLio, VHDL_1993, VHDL_2008, VHDL_2000, VHDL_2019
 from hdlio import VERILOG_1995, VERILOG_2001, VERILOG_2005
 from hdlio import SYSTEMVERILOG_2005, SYSTEMVERILOG_2009, SYSTEMVERILOG_2012, SYSTEMVERILOG_2017
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def fixtures_dir():
     """Path to test fixtures directory"""
     return TEST_DIR / "fixtures"
+
+
+@pytest.fixture(scope="session")
+def lrm_fixtures_dir(fixtures_dir):
+    """Path to LRM (Language Reference Manual) test fixtures directory"""
+    return fixtures_dir / "lrm"
+
+
+# VHDL Language Version Specific Fixtures
+@pytest.fixture(scope="session")
+def vhdl_1993_file(lrm_fixtures_dir):
+    """Path to VHDL-1993 language version specific test file"""
+    return lrm_fixtures_dir / "vhdl_1993.vhd"
+
+
+@pytest.fixture(scope="session")
+def vhdl_2000_file(lrm_fixtures_dir):
+    """Path to VHDL-2000 language version specific test file"""
+    return lrm_fixtures_dir / "vhdl_2000.vhd"
+
+
+@pytest.fixture(scope="session")
+def vhdl_2008_file(lrm_fixtures_dir):
+    """Path to VHDL-2008 language version specific test file"""
+    return lrm_fixtures_dir / "vhdl_2008.vhd"
+
+
+@pytest.fixture(scope="session")
+def vhdl_2019_file(lrm_fixtures_dir):
+    """Path to VHDL-2019 language version specific test file"""
+    return lrm_fixtures_dir / "vhdl_2019.vhd"
+
+
+# Verilog Language Version Specific Fixtures
+@pytest.fixture(scope="session")
+def verilog_1995_file(lrm_fixtures_dir):
+    """Path to Verilog-1995 language version specific test file"""
+    return lrm_fixtures_dir / "verilog_1995.v"
+
+
+@pytest.fixture(scope="session")
+def verilog_2001_file(lrm_fixtures_dir):
+    """Path to Verilog-2001 language version specific test file"""
+    return lrm_fixtures_dir / "verilog_2001.v"
+
+
+@pytest.fixture(scope="session")
+def verilog_2005_file(lrm_fixtures_dir):
+    """Path to Verilog-2005 language version specific test file"""
+    return lrm_fixtures_dir / "verilog_2005.v"
+
+
+# SystemVerilog Language Version Specific Fixtures
+@pytest.fixture(scope="session")
+def systemverilog_2005_file(lrm_fixtures_dir):
+    """Path to SystemVerilog-2005 language version specific test file"""
+    return lrm_fixtures_dir / "systemverilog_2005.sv"
+
+
+@pytest.fixture(scope="session")
+def systemverilog_2009_file(lrm_fixtures_dir):
+    """Path to SystemVerilog-2009 language version specific test file"""
+    return lrm_fixtures_dir / "systemverilog_2009.sv"
+
+
+@pytest.fixture(scope="session")
+def systemverilog_2012_file(lrm_fixtures_dir):
+    """Path to SystemVerilog-2012 language version specific test file"""
+    return lrm_fixtures_dir / "systemverilog_2012.sv"
+
+
+@pytest.fixture(scope="session")
+def systemverilog_2017_file(lrm_fixtures_dir):
+    """Path to SystemVerilog-2017 language version specific test file"""
+    return lrm_fixtures_dir / "systemverilog_2017.sv"
+
+
+# Combined fixtures for all language versions
+@pytest.fixture(scope="session")
+def all_vhdl_version_files(lrm_fixtures_dir):
+    """Dictionary mapping VHDL versions to their fixture files"""
+    return {
+        VHDL_1993: lrm_fixtures_dir / "vhdl_1993.vhd",
+        VHDL_2000: lrm_fixtures_dir / "vhdl_2000.vhd",
+        VHDL_2008: lrm_fixtures_dir / "vhdl_2008.vhd",
+        VHDL_2019: lrm_fixtures_dir / "vhdl_2019.vhd"
+    }
+
+
+@pytest.fixture(scope="session")
+def all_verilog_version_files(lrm_fixtures_dir):
+    """Dictionary mapping Verilog versions to their fixture files"""
+    return {
+        VERILOG_1995: lrm_fixtures_dir / "verilog_1995.v",
+        VERILOG_2001: lrm_fixtures_dir / "verilog_2001.v",
+        VERILOG_2005: lrm_fixtures_dir / "verilog_2005.v"
+    }
+
+
+@pytest.fixture(scope="session")
+def all_systemverilog_version_files(lrm_fixtures_dir):
+    """Dictionary mapping SystemVerilog versions to their fixture files"""
+    return {
+        SYSTEMVERILOG_2005: lrm_fixtures_dir / "systemverilog_2005.sv",
+        SYSTEMVERILOG_2009: lrm_fixtures_dir / "systemverilog_2009.sv",
+        SYSTEMVERILOG_2012: lrm_fixtures_dir / "systemverilog_2012.sv",
+        SYSTEMVERILOG_2017: lrm_fixtures_dir / "systemverilog_2017.sv"
+    }
 
 
 @pytest.fixture
@@ -180,7 +288,7 @@ def systemverilog_parser():
 @pytest.fixture(scope="session")
 def all_vhdl_versions():
     """List of all supported VHDL versions"""
-    return [VHDL_2000, VHDL_2008, VHDL_2019]
+    return [VHDL_1993, VHDL_2000, VHDL_2008, VHDL_2019]
 
 
 @pytest.fixture(scope="session")
