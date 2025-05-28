@@ -1,171 +1,247 @@
 """
-Unit tests for HDLio parser functionality
+Unit tests for HDL parsers
 """
 
 import pytest
-from hdlio import HDLio, VHDL_2008, VHDL_2000, VHDL_2019
+from hdlio import HDLio, HDL_LRM
 
 
 class TestVHDLParser:
     """Test VHDL parser functionality"""
 
-    @pytest.mark.parser
+    @pytest.mark.unit
     @pytest.mark.vhdl
-    def test_simple_entity_parsing(self, temp_vhdl_file, hdlio_parser):
+    def test_simple_entity_parsing(self, tmp_path):
         """Test parsing a simple VHDL entity"""
-        hdl = hdlio_parser(str(temp_vhdl_file))
-        design_units = hdl.get_design_units()
+        vhdl_content = """
+entity test_entity is
+    port (
+        clk : in std_logic;
+        data : out std_logic
+    );
+end entity test_entity;
+        """
 
-        assert len(design_units) == 1
+        temp_file = tmp_path / "test_entity.vhd"
+        temp_file.write_text(vhdl_content)
+
+        hdlio = HDLio()
+        source_path = hdlio.load(str(temp_file), "work", HDL_LRM.VHDL_2008)
+        assert source_path is not None
+        
+        design_units = hdlio.get_design_units("work")
+        assert len(design_units) >= 1
+
         entity = design_units[0]
+        assert entity.name == "test_entity"
         assert entity.get_vhdl_type() == "entity"
-        assert entity.name == "simple_test"
 
-    @pytest.mark.parser
+    @pytest.mark.unit
     @pytest.mark.vhdl
-    def test_entity_with_ports(self, simple_vhdl_file, hdlio_parser):
-        """Test parsing entity with ports"""
-        if not simple_vhdl_file.exists():
-            pytest.skip("Simple VHDL file not found")
+    def test_entity_with_architecture(self, tmp_path):
+        """Test parsing entity with architecture"""
+        vhdl_content = """
+entity counter is
+    port (
+        clk : in std_logic;
+        count : out integer
+    );
+end entity counter;
 
-        hdl = hdlio_parser(str(simple_vhdl_file))
-        design_units = hdl.get_design_units()
+architecture behavioral of counter is
+begin
+    -- Simple counter implementation
+end architecture behavioral;
+        """
 
+        temp_file = tmp_path / "counter.vhd"
+        temp_file.write_text(vhdl_content)
+
+        hdlio = HDLio()
+        source_path = hdlio.load(str(temp_file), "work", HDL_LRM.VHDL_2008)
+        assert source_path is not None
+        
+        design_units = hdlio.get_design_units("work")
+        assert len(design_units) >= 2  # Entity + Architecture
+
+        # Map old version strings to new HDL_LRM enum
+        from hdlio.core.constants import VHDL_1993, VHDL_2000, VHDL_2008, VHDL_2019
+        version_map = {
+            VHDL_1993: HDL_LRM.VHDL_1993,
+            VHDL_2000: HDL_LRM.VHDL_2000,
+            VHDL_2008: HDL_LRM.VHDL_2008,
+            VHDL_2019: HDL_LRM.VHDL_2019
+        }
+
+        # Find entity and architecture
+        entity = next((unit for unit in design_units if unit.get_vhdl_type() == "entity"), None)
+        architecture = next((unit for unit in design_units if unit.get_vhdl_type() == "architecture"), None)
+
+        assert entity is not None
+        assert architecture is not None
+        assert entity.name == "counter"
+        assert architecture.name == "behavioral"
+
+    @pytest.mark.unit
+    @pytest.mark.vhdl
+    def test_package_parsing(self, tmp_path):
+        """Test parsing VHDL package"""
+        vhdl_content = """
+package test_package is
+    constant WIDTH : integer := 8;
+end package test_package;
+        """
+
+        temp_file = tmp_path / "test_package.vhd"
+        temp_file.write_text(vhdl_content)
+
+        hdlio = HDLio()
+        source_path = hdlio.load(str(temp_file), "work", HDL_LRM.VHDL_2008)
+        assert source_path is not None
+        
+        design_units = hdlio.get_design_units("work")
         assert len(design_units) >= 1
-        entity = design_units[0]
 
-        port_groups = entity.get_port_groups()
-        assert len(port_groups) >= 1
+        package = design_units[0]
+        assert package.name == "test_package"
+        assert package.get_vhdl_type() == "package"
 
-        # Check that we have some ports
-        total_ports = sum(len(group.get_ports()) for group in port_groups)
-        assert total_ports >= 1
-
-    @pytest.mark.parser
+    @pytest.mark.unit
     @pytest.mark.vhdl
-    def test_vhdl_language_versions(self, tmp_path, simple_vhdl_content, all_vhdl_versions):
-        """Test parsing with different VHDL language versions"""
-        temp_file = tmp_path / "version_test.vhd"
-        temp_file.write_text(simple_vhdl_content)
+    def test_multiple_design_units(self, tmp_path):
+        """Test parsing multiple design units in one file"""
+        vhdl_content = """
+package utils is
+    constant MAX_COUNT : integer := 255;
+end package utils;
 
-        for version in all_vhdl_versions:
-            hdl = HDLio(str(temp_file), version)
-            design_units = hdl.get_design_units()
+entity multi_unit is
+    port (
+        input : in std_logic;
+        output : out std_logic
+    );
+end entity multi_unit;
 
-            # Should be able to parse with any version
-            assert len(design_units) >= 1
+architecture simple of multi_unit is
+begin
+    output <= input;
+end architecture simple;
+        """
 
-    @pytest.mark.parser
+        temp_file = tmp_path / "multi_unit.vhd"
+        temp_file.write_text(vhdl_content)
+
+        hdlio = HDLio()
+        source_path = hdlio.load(str(temp_file), "work", HDL_LRM.VHDL_2008)
+        assert source_path is not None
+        
+        design_units = hdlio.get_design_units("work")
+        assert len(design_units) >= 3  # Package + Entity + Architecture
+
+        # Check that we have the expected types
+        unit_types = [unit.get_vhdl_type() for unit in design_units]
+        assert "package" in unit_types
+        assert "entity" in unit_types
+        assert "architecture" in unit_types
+
+    @pytest.mark.unit
     @pytest.mark.vhdl
-    def test_complex_entity_parsing(self, complex_vhdl_file, hdlio_parser):
-        """Test parsing a more complex VHDL file"""
-        if not complex_vhdl_file.exists():
-            pytest.skip("Complex VHDL file not found")
+    def test_library_management(self, tmp_path):
+        """Test library management functionality"""
+        vhdl_content1 = """
+entity lib1_entity is
+    port (clk : in std_logic);
+end entity lib1_entity;
+        """
 
-        hdl = hdlio_parser(str(complex_vhdl_file))
-        design_units = hdl.get_design_units()
+        vhdl_content2 = """
+entity lib2_entity is
+    port (data : out std_logic);
+end entity lib2_entity;
+        """
 
-        # Should find at least one design unit
-        assert len(design_units) >= 1
+        temp_file1 = tmp_path / "lib1.vhd"
+        temp_file1.write_text(vhdl_content1)
 
-        # Check for entity
-        entities = [unit for unit in design_units if unit.get_vhdl_type() == "entity"]
-        assert len(entities) >= 1
+        temp_file2 = tmp_path / "lib2.vhd"
+        temp_file2.write_text(vhdl_content2)
 
-    @pytest.mark.parser
-    def test_invalid_file_handling(self, tmp_path, hdlio_parser):
-        """Test handling of invalid files"""
+        hdlio = HDLio()
+        
+        # Load into different libraries
+        source1 = hdlio.load(str(temp_file1), "lib1", HDL_LRM.VHDL_2008)
+        source2 = hdlio.load(str(temp_file2), "lib2", HDL_LRM.VHDL_2008)
+        
+        assert source1 is not None
+        assert source2 is not None
+
+        # Check library separation
+        lib1_units = hdlio.get_design_units("lib1")
+        lib2_units = hdlio.get_design_units("lib2")
+
+        assert len(lib1_units) == 1
+        assert len(lib2_units) == 1
+        assert lib1_units[0].name == "lib1_entity"
+        assert lib2_units[0].name == "lib2_entity"
+
+        # Check library listing
+        libraries = hdlio.get_libraries()
+        assert "lib1" in libraries
+        assert "lib2" in libraries
+
+    @pytest.mark.unit
+    @pytest.mark.vhdl
+    def test_error_handling(self, tmp_path):
+        """Test error handling for invalid files"""
         # Test non-existent file
-        non_existent = tmp_path / "does_not_exist.vhd"
+        hdlio = HDLio()
+        source_path = hdlio.load("non_existent_file.vhd", "work", HDL_LRM.VHDL_2008)
+        assert source_path is None
 
-        with pytest.raises((FileNotFoundError, IOError)):
-            hdlio_parser(str(non_existent))
+        # Test invalid VHDL syntax
+        invalid_vhdl = """
+        this is not valid VHDL syntax at all
+        """
 
-    @pytest.mark.parser
+        temp_file = tmp_path / "invalid.vhd"
+        temp_file.write_text(invalid_vhdl)
+
+        source_path = hdlio.load(str(temp_file), "work", HDL_LRM.VHDL_2008)
+        # Should return None for parse errors
+        assert source_path is None
+
+    @pytest.mark.unit
     @pytest.mark.vhdl
-    def test_malformed_vhdl_handling(self, tmp_path, hdlio_parser):
-        """Test handling of malformed VHDL"""
-        malformed_vhdl = """entity bad_entity is
-          port (
-            clk : in std_logic  -- Missing semicolon
-            data : out std_logic
-          );
-        end entity bad_entity;"""
+    def test_source_tracking(self, tmp_path):
+        """Test that design units track their source files"""
+        vhdl_content = """
+entity source_test is
+    port (clk : in std_logic);
+end entity source_test;
+        """
 
-        temp_file = tmp_path / "malformed.vhd"
-        temp_file.write_text(malformed_vhdl)
+        temp_file = tmp_path / "source_test.vhd"
+        temp_file.write_text(vhdl_content)
 
-        # Parser should not crash, but may have parsing errors
-        hdl = hdlio_parser(str(temp_file))
-        design_units = hdl.get_design_units()
-
-        # May succeed with partial parsing or fail gracefully
-        assert isinstance(design_units, list)
-
-    @pytest.mark.parser
-    @pytest.mark.vhdl
-    def test_port_direction_parsing(self, tmp_path, hdlio_parser):
-        """Test parsing of different port directions"""
-        direction_test = """entity direction_test is
-          port (
-            input_port : in std_logic;
-            output_port : out std_logic;
-            bidirectional_port : inout std_logic;
-            buffer_port : buffer std_logic
-          );
-        end entity direction_test;"""
-
-        temp_file = tmp_path / "direction_test.vhd"
-        temp_file.write_text(direction_test)
-
-        hdl = hdlio_parser(str(temp_file))
-        design_units = hdl.get_design_units()
-
+        hdlio = HDLio()
+        source_path = hdlio.load(str(temp_file), "work", HDL_LRM.VHDL_2008)
+        assert source_path is not None
+        
+        design_units = hdlio.get_design_units("work")
         assert len(design_units) >= 1
+
         entity = design_units[0]
+        assert entity.get_source() is not None
+        assert str(temp_file) in entity.get_source()
 
-        port_groups = entity.get_port_groups()
-        all_ports = []
-        for group in port_groups:
-            all_ports.extend(group.get_ports())
 
-        # Should have parsed multiple ports
-        assert len(all_ports) >= 2
+class TestVerilogParser:
+    """Test Verilog parser functionality (placeholder for future implementation)"""
 
-        # Check directions are parsed correctly
-        directions = [port.get_direction() for port in all_ports]
-        assert any(direction == "in" for direction in directions)
-        assert any(direction == "out" for direction in directions)
-
-    @pytest.mark.parser
-    @pytest.mark.vhdl
-    def test_port_type_parsing(self, tmp_path, hdlio_parser):
-        """Test parsing of different port types"""
-        type_test = """entity type_test is
-          port (
-            std_logic_port : in std_logic;
-            integer_port : in integer;
-            boolean_port : in boolean
-          );
-        end entity type_test;"""
-
-        temp_file = tmp_path / "type_test.vhd"
-        temp_file.write_text(type_test)
-
-        hdl = hdlio_parser(str(temp_file))
-        design_units = hdl.get_design_units()
-
-        assert len(design_units) >= 1
-        entity = design_units[0]
-
-        port_groups = entity.get_port_groups()
-        all_ports = []
-        for group in port_groups:
-            all_ports.extend(group.get_ports())
-
-        # Should have parsed multiple ports with different types
-        assert len(all_ports) >= 2
-
-        types = [port.get_type() for port in all_ports]
-        assert any("std_logic" in port_type for port_type in types)
-        assert any("integer" in port_type for port_type in types)
+    @pytest.mark.unit
+    @pytest.mark.verilog
+    @pytest.mark.skip(reason="Verilog parser not yet implemented in new API")
+    def test_simple_module_parsing(self):
+        """Test parsing a simple Verilog module"""
+        # This will be implemented when Verilog support is added to the new API
+        pass

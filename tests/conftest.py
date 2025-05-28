@@ -35,8 +35,8 @@ setup_pyhdlio_path()
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from hdlio import HDLio, VHDL_1993, VHDL_2008, VHDL_2000, VHDL_2019
-from hdlio import VERILOG_1995, VERILOG_2001, VERILOG_2005
-from hdlio import SYSTEMVERILOG_2005, SYSTEMVERILOG_2009, SYSTEMVERILOG_2012, SYSTEMVERILOG_2017
+from hdlio import Verilog_1995, Verilog_2001, Verilog_2005
+from hdlio import SystemVerilog_2005, SystemVerilog_2009, SystemVerilog_2012, SystemVerilog_2017
 
 
 @pytest.fixture(scope="session")
@@ -136,9 +136,9 @@ def all_vhdl_version_files(lrm_fixtures_dir):
 def all_verilog_version_files(lrm_fixtures_dir):
     """Dictionary mapping Verilog versions to their fixture files"""
     return {
-        VERILOG_1995: lrm_fixtures_dir / "verilog_1995.v",
-        VERILOG_2001: lrm_fixtures_dir / "verilog_2001.v",
-        VERILOG_2005: lrm_fixtures_dir / "verilog_2005.v"
+        Verilog_1995: lrm_fixtures_dir / "verilog_1995.v",
+        Verilog_2001: lrm_fixtures_dir / "verilog_2001.v",
+        Verilog_2005: lrm_fixtures_dir / "verilog_2005.v"
     }
 
 
@@ -146,10 +146,10 @@ def all_verilog_version_files(lrm_fixtures_dir):
 def all_systemverilog_version_files(lrm_fixtures_dir):
     """Dictionary mapping SystemVerilog versions to their fixture files"""
     return {
-        SYSTEMVERILOG_2005: lrm_fixtures_dir / "systemverilog_2005.sv",
-        SYSTEMVERILOG_2009: lrm_fixtures_dir / "systemverilog_2009.sv",
-        SYSTEMVERILOG_2012: lrm_fixtures_dir / "systemverilog_2012.sv",
-        SYSTEMVERILOG_2017: lrm_fixtures_dir / "systemverilog_2017.sv"
+        SystemVerilog_2005: lrm_fixtures_dir / "systemverilog_2005.sv",
+        SystemVerilog_2009: lrm_fixtures_dir / "systemverilog_2009.sv",
+        SystemVerilog_2012: lrm_fixtures_dir / "systemverilog_2012.sv",
+        SystemVerilog_2017: lrm_fixtures_dir / "systemverilog_2017.sv"
     }
 
 
@@ -239,7 +239,24 @@ def temp_vhdl_file(tmp_path, simple_vhdl_content):
 def hdlio_parser():
     """HDLio parser instance for VHDL 2008"""
     def _create_parser(filename, language=VHDL_2008):
-        return HDLio(filename, language)
+        from hdlio import HDLio, HDL_LRM
+        from hdlio.core.constants import VHDL_1993 as CONST_VHDL_1993, VHDL_2000 as CONST_VHDL_2000, VHDL_2008 as CONST_VHDL_2008, VHDL_2019 as CONST_VHDL_2019
+        
+        # Map old language constants to new HDL_LRM enum
+        language_map = {
+            CONST_VHDL_1993: HDL_LRM.VHDL_1993,
+            CONST_VHDL_2000: HDL_LRM.VHDL_2000,
+            CONST_VHDL_2008: HDL_LRM.VHDL_2008,
+            CONST_VHDL_2019: HDL_LRM.VHDL_2019
+        }
+        
+        hdl_lrm = language_map.get(language, HDL_LRM.VHDL_2008)
+        
+        hdlio = HDLio()
+        source_path = hdlio.load(filename, "work", hdl_lrm)
+        if source_path is None:
+            raise FileNotFoundError(f"Failed to load file: {filename}")
+        return hdlio
     return _create_parser
 
 
@@ -282,16 +299,20 @@ def fifo_uvm_test_file(verilog_files_dir):
 @pytest.fixture
 def verilog_parser():
     """HDLio parser instance for Verilog 2005"""
-    def _create_parser(filename, language=VERILOG_2005):
-        return HDLio(filename, language)
+    def _create_parser(filename, language=Verilog_2005):
+        # For now, Verilog support is not implemented in the new API
+        # This will need to be updated when Verilog support is added
+        raise NotImplementedError("Verilog support not yet implemented in new API")
     return _create_parser
 
 
 @pytest.fixture
 def systemverilog_parser():
     """HDLio parser instance for SystemVerilog 2012"""
-    def _create_parser(filename, language=SYSTEMVERILOG_2012):
-        return HDLio(filename, language)
+    def _create_parser(filename, language=SystemVerilog_2012):
+        # For now, SystemVerilog support is not implemented in the new API
+        # This will need to be updated when SystemVerilog support is added
+        raise NotImplementedError("SystemVerilog support not yet implemented in new API")
     return _create_parser
 
 
@@ -304,13 +325,13 @@ def all_vhdl_versions():
 @pytest.fixture(scope="session")
 def all_verilog_versions():
     """List of all supported Verilog versions"""
-    return [VERILOG_1995, VERILOG_2001, VERILOG_2005]
+    return [Verilog_1995, Verilog_2001, Verilog_2005]
 
 
 @pytest.fixture(scope="session")
 def all_systemverilog_versions():
     """List of all supported SystemVerilog versions"""
-    return [SYSTEMVERILOG_2005, SYSTEMVERILOG_2009, SYSTEMVERILOG_2012, SYSTEMVERILOG_2017]
+    return [SystemVerilog_2005, SystemVerilog_2009, SystemVerilog_2012, SystemVerilog_2017]
 
 
 def pytest_configure(config):
