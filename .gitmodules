@@ -1,0 +1,3 @@
+[submodule "PyHDLio"]
+	path = PyHDLio
+	url = https://github.com/amb5l/PyHDLio.git
