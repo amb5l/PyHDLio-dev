@@ -1,0 +1,19 @@
+# Python virtual environment
+.venv/
+
+# Python cache and build artifacts
+__pycache__/
+*.pyc
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+*.tar.gz
+
+# Test artifacts
+tests/*.pyc
+tests/__pycache__/
+
+# IDE and editor files
+.vscode/

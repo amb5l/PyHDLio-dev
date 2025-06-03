@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PyHDLio-dev"
+version = "0.1.0"
+description = "Development repository for PyHDLio - HDL input/output library"
+authors = [
+    {name = "PyHDLio Contributors"}
+]
+license = "GPL-3.0"
+requires-python = ">=3.8"
+dependencies = [
+    # Development dependencies for the entire project
+    "antlr4-python3-runtime>=4.13.2",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Private :: Do Not Upload",  # This prevents accidental upload to PyPI
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "flake8>=3.8",
+    "mypy>=0.910",
+]
+
+# Note: This is a development repository
+# For the actual hdlio package, install from the PyHDLio subdirectory:
+# pip install -e ./PyHDLio
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["antlr4.*"]
+ignore_missing_imports = true
