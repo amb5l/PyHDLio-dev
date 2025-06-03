@@ -18,6 +18,9 @@ python -m venv .venv
 # or
 source .venv/bin/activate   # Linux/Mac
 
+# Install all dependencies (including pytest and development tools)
+pip install -r requirements.txt
+
 # Install the hdlio package
 pip install -e ./PyHDLio
 
@@ -28,9 +31,34 @@ python PyHDLio/examples/vhdl/simple/simple.py
 ## Requirements
 
 - Python 3.8+
-- antlr4-python3-runtime>=4.13.2
+- Dependencies are listed in `requirements.txt` including:
+  - antlr4-python3-runtime>=4.13.2
+  - pytest>=6.0 (for testing)
+  - pytest-cov>=2.12.0 (for coverage)
+  - flake8>=3.8 (for linting)
+  - mypy>=0.910 (for type checking)
+  - black>=21.0.0 (for code formatting)
 
-Install dependencies with:
+Install all dependencies with:
 ```bash
 pip install -r requirements.txt
 ```
+
+## Testing
+
+This project includes a comprehensive test suite to ensure code quality and reliability.
+
+### Quick Test Run
+
+After following the Quick Start setup above, simply run:
+
+```bash
+# Run all tests
+python -m pytest tests/ -v
+```
+
+### Full Testing Documentation
+
+For complete testing instructions, see:
+
+**📋 [tests/README.md](tests/README.md)**
