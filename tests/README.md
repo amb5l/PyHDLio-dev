@@ -10,7 +10,8 @@ tests/
 │   └── test_vhdl_parser.py  # VHDL parser unit tests
 ├── fixtures/                # Test fixtures and sample files
 │   └── vhdl/
-│       └── life_signs.vhd   # Minimal VHDL entity for basic testing
+│       ├── life_signs.vhd   # Minimal VHDL entity for basic testing
+│       └── entity_with_ports.vhd  # Complex entity with generics and ports
 └── README.md                # This file
 ```
 
@@ -74,6 +75,9 @@ Unit tests verify individual components in isolation:
 
 - **`test_vhdl_parser.py`** - Tests for VHDL parsing functionality
   - `test_parse_life_signs_vhdl()` - Basic "life signs" test using minimal VHDL fixture
+  - `test_parse_life_signs_vhdl_ast_mode()` - AST mode parsing test for minimal entity
+  - `test_entity_reporting()` - Entity reporting functionality test
+  - `test_entity_with_ports_and_generics()` - Comprehensive test for complex entities with ports and generics
   - `test_parse_nonexistent_file()` - Error handling for missing files
   - `test_parse_vhdl_file_path_handling()` - File path processing tests
 
@@ -82,6 +86,14 @@ Unit tests verify individual components in isolation:
 Reusable test data and sample files:
 
 - **`vhdl/life_signs.vhd`** - Minimal VHDL entity for basic parser validation
+  - Contains simple entity declaration with no generics or ports
+  - Used for "life signs" testing to verify basic parsing functionality
+
+- **`vhdl/entity_with_ports.vhd`** - Complex VHDL entity for comprehensive testing  
+  - Contains entity with both generics and ports
+  - Demonstrates generic parameters with default values
+  - Includes ports with different directions and complex types
+  - Used for testing AST extraction and entity reporting features
 
 ## Writing New Tests
 
@@ -106,12 +118,71 @@ class TestModuleName:
         assert result == "expected_output"
 ```
 
+### Testing AST Functionality
+
+For testing AST parsing and entity extraction:
+
+```python
+def test_ast_parsing(self):
+    """Test AST parsing extracts entity information correctly."""
+    # Parse in AST mode
+    result = parse_vhdl(fixture_path, mode='ast')
+    
+    # Verify module structure
+    assert isinstance(result, VHDLModule)
+    assert len(result.entities) == 1
+    
+    # Verify entity details
+    entity = result.entities[0]
+    assert entity.name == "expected_name"
+    
+    # Verify generics
+    assert len(entity.generics) == expected_count
+    for generic in entity.generics:
+        assert generic.name
+        assert generic.type
+        # Check default_value if applicable
+    
+    # Verify ports
+    assert len(entity.ports) == expected_count
+    for port in entity.ports:
+        assert port.name
+        assert port.direction in ["in", "out", "inout"]
+        assert port.type
+```
+
+### Testing Entity Reporting
+
+For testing the reporting functionality:
+
+```python
+def test_entity_reporting(self):
+    """Test entity reporting generates expected output."""
+    result = parse_vhdl(fixture_path, mode='ast')
+    
+    # Test basic reporting
+    report = report_entities(result)
+    assert "Entity:" in report
+    assert "Generics:" in report
+    assert "Ports:" in report
+    
+    # Test grouped reporting
+    grouped_report = report_entities(result, group_ports=True)
+    assert "Group" in grouped_report
+```
+
 ### Adding Test Fixtures
 
 1. Place reusable test data in appropriate subdirectories under `tests/fixtures/`
-2. Use descriptive filenames
-3. Keep fixtures minimal but representative
-4. Document the purpose of each fixture
+2. Use descriptive filenames that indicate the fixture's purpose
+3. Keep fixtures minimal but representative of real-world usage
+4. Document the purpose and contents of each fixture
+
+Example VHDL fixtures:
+- **Simple entities** - For basic parsing tests
+- **Complex entities** - For comprehensive feature testing  
+- **Error cases** - For testing error handling
+- **Edge cases** - For boundary condition testing
 
 ### Path Handling in Tests
 
@@ -119,13 +190,15 @@ When referencing fixtures from unit tests:
 ```python
 import os
 
-# Get fixture path from unit test
-fixture_path = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)),  # Go up to tests/
-    'fixtures',
-    'vhdl',
-    'your_fixture.vhd'
-)
+class TestVHDLParser:
+    def setup_method(self):
+        """Setup common paths for all tests."""
+        self.fixture_dir = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),  # Go up to tests/
+            'fixtures', 'vhdl'
+        )
+        self.life_signs_path = os.path.join(self.fixture_dir, 'life_signs.vhd')
+        self.entity_with_ports_path = os.path.join(self.fixture_dir, 'entity_with_ports.vhd')
 ```
 
 ## Troubleshooting
@@ -147,16 +220,50 @@ fixture_path = os.path.join(
 4. **Missing dependencies:**
    - Ensure all requirements are installed: `pip install -r requirements.txt`
 
+5. **AST parsing tests failing:**
+   - Verify the VHDL fixture syntax is correct
+   - Check that visitor implementation matches VHDL grammar structure
+   - Ensure AST classes are properly imported
+
 ### Getting Help
 
 - Check test output for detailed error messages
 - Use `python -m pytest tests/ -vv` for verbose output
 - Verify virtual environment is activated
 - Ensure all dependencies are installed
+- For AST-related issues, check the visitor implementation and grammar compatibility
+
+## Test Coverage
+
+Current test coverage includes:
+
+### VHDL Parser Tests
+- ✅ Basic VHDL parsing (tree mode)
+- ✅ AST mode parsing
+- ✅ Entity name extraction
+- ✅ Generic parameter extraction (name, type, default values)
+- ✅ Port extraction (name, direction, type)
+- ✅ Port grouping functionality
+- ✅ Entity reporting (flat and grouped modes)
+- ✅ Error handling (file not found, syntax errors)
+- ✅ File path processing
+
+### Areas for Future Test Expansion
+- Complex VHDL language constructs
+- Multiple entities per file
+- Advanced port grouping based on comments/whitespace
+- Performance testing with large VHDL files
+- Integration tests with real-world VHDL projects
 
 ## Continuous Integration
 
 Tests should pass before merging code changes. The test suite serves as:
 - **Regression prevention** - Catch breaking changes
-- **Documentation** - Show expected behavior
-- **Quality assurance** - Maintain code reliability
+- **Documentation** - Show expected behavior through examples
+- **Quality assurance** - Maintain code reliability and correctness
+- **Feature validation** - Verify new functionality works as intended
+
+Run the full test suite with verbose output before committing:
+```bash
+python -m pytest tests/ -v
+```

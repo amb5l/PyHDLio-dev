@@ -1,57 +1,126 @@
-import os
 import pytest
-from hdlio.vhdl.parse_vhdl import parse_vhdl
+import os
+from PyHDLio.hdlio.vhdl.parse_vhdl import parse_vhdl, VHDLSyntaxError
+from PyHDLio.hdlio.vhdl import VHDLModule, Entity, report_entities
 
 
 class TestVHDLParser:
     """Unit tests for VHDL parser functionality."""
 
+    def setup_method(self):
+        """Setup common paths for all tests."""
+        self.fixture_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fixtures', 'vhdl')
+        self.life_signs_path = os.path.join(self.fixture_dir, 'life_signs.vhd')
+        self.entity_with_ports_path = os.path.join(self.fixture_dir, 'entity_with_ports.vhd')
+
     def test_parse_life_signs_vhdl(self):
-        """Test basic VHDL parsing functionality with life_signs.vhd fixture.
+        """Test parsing the life_signs.vhd fixture returns valid string."""
+        result = parse_vhdl(self.life_signs_path)
+        
+        # Check that result is a string (tree representation)
+        assert isinstance(result, str)
+        assert len(result) > 0
+        
+        # Check that the result contains expected VHDL elements
+        assert 'life_signs' in result
+        assert 'entity' in result
+        
+    def test_parse_life_signs_vhdl_ast_mode(self):
+        """Test parsing the life_signs.vhd fixture in AST mode returns VHDLModule."""
+        result = parse_vhdl(self.life_signs_path, mode='ast')
+        
+        # Check that result is a VHDLModule
+        assert isinstance(result, VHDLModule)
+        assert len(result.entities) == 1
+        
+        # Check the entity details
+        entity = result.entities[0]
+        assert isinstance(entity, Entity)
+        assert entity.name == 'life_signs'
+        assert entity.generics == []  # This minimal entity has no generics
+        assert entity.ports == []     # This minimal entity has no ports
+        assert entity.port_groups == []
+    
+    def test_entity_reporting(self):
+        """Test entity reporting functionality."""
+        result = parse_vhdl(self.life_signs_path, mode='ast')
+        
+        # Test reporting
+        report = report_entities(result)
+        assert "Entity: life_signs" in report
+        assert "Generics:" in report
+        assert "Ports (flat):" in report
+        assert "Ports (grouped):" in report
+        assert "None" in report  # Since this entity has no generics or ports
 
-        This is a basic 'life signs' test to ensure the VHDL parser can successfully
-        parse a minimal VHDL entity without errors.
-        """
-        # Get the path to the life_signs.vhd fixture
-        fixture_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),  # Go up to tests/
-            'fixtures',
-            'vhdl',
-            'life_signs.vhd'
-        )
+    def test_entity_with_ports_and_generics(self):
+        """Test parsing entity with ports and generics."""
+        result = parse_vhdl(self.entity_with_ports_path, mode='ast')
+        assert len(result.entities) == 1
 
-        # Ensure the fixture file exists
-        assert os.path.exists(fixture_path), f"Fixture file not found: {fixture_path}"
+        entity = result.entities[0]
+        assert entity.name == "test_entity"
 
-        # Parse the VHDL file - this should not raise any exceptions
-        parse_tree = parse_vhdl(fixture_path)
+        # Check generics - now extraction is implemented
+        assert len(entity.generics) == 2
+        generic_names = [g.name for g in entity.generics]
+        assert "WIDTH" in generic_names
+        assert "DEPTH" in generic_names
+        
+        # Verify generic details
+        width_generic = next(g for g in entity.generics if g.name == "WIDTH")
+        assert width_generic.type == "integer"
+        assert width_generic.default_value == "8"
+        
+        depth_generic = next(g for g in entity.generics if g.name == "DEPTH")
+        assert depth_generic.type == "natural"
+        assert depth_generic.default_value == "16"
 
-        # Basic assertions
-        assert parse_tree is not None, "Parse tree should not be None"
-        assert isinstance(parse_tree, str), "Parse tree should be a string representation"
-        assert len(parse_tree) > 0, "Parse tree should not be empty"
-
-        # The parse tree should contain evidence of parsing the entity
-        assert 'life_signs' in parse_tree, "Parse tree should contain the entity name 'life_signs'"
-
+        # Check ports - now extraction is implemented
+        assert len(entity.ports) == 3
+        port_names = [p.name for p in entity.ports]
+        assert "clk" in port_names
+        assert "reset" in port_names
+        assert "data" in port_names
+        
+        # Verify port details
+        clk_port = next(p for p in entity.ports if p.name == "clk")
+        assert clk_port.direction == "in"
+        assert clk_port.type == "STD_LOGIC"
+        
+        reset_port = next(p for p in entity.ports if p.name == "reset")
+        assert reset_port.direction == "in"
+        assert reset_port.type == "STD_LOGIC"
+        
+        data_port = next(p for p in entity.ports if p.name == "data")
+        assert data_port.direction == "out"
+        assert "STD_LOGIC_VECTOR" in data_port.type
+        
     def test_parse_nonexistent_file(self):
-        """Test that parsing a non-existent file raises FileNotFoundError."""
-        nonexistent_file = "does_not_exist.vhd"
-
-        with pytest.raises(FileNotFoundError):
-            parse_vhdl(nonexistent_file)
-
+        """Test that parsing a non-existent file raises appropriate exception."""
+        non_existent_path = os.path.join(self.fixture_dir, 'does_not_exist.vhd')
+        
+        with pytest.raises(FileNotFoundError) as exc_info:
+            parse_vhdl(non_existent_path)
+        
+        assert 'VHDL file not found' in str(exc_info.value)
+        assert 'does_not_exist.vhd' in str(exc_info.value)
+        
     def test_parse_vhdl_file_path_handling(self):
-        """Test that the parser correctly handles file paths."""
-        # Test with absolute path
-        fixture_path = os.path.abspath(os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),  # Go up to tests/
-            'fixtures',
-            'vhdl',
-            'life_signs.vhd'
-        ))
-
-        # This should work without issues
-        parse_tree = parse_vhdl(fixture_path)
-        assert parse_tree is not None
-        assert 'life_signs' in parse_tree
+        """Test that the parser handles file paths correctly."""
+        # Test with absolute path 
+        abs_path = os.path.abspath(self.life_signs_path)
+        result = parse_vhdl(abs_path)
+        assert isinstance(result, str)
+        assert 'life_signs' in result
+        
+        # Test with relative path
+        # Change to fixture directory and use relative path
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(self.fixture_dir)
+            result = parse_vhdl('life_signs.vhd')
+            assert isinstance(result, str)
+            assert 'life_signs' in result
+        finally:
+            os.chdir(original_cwd)

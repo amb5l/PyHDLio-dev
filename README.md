@@ -5,6 +5,15 @@ This is the **development repository** for PyHDLio. It contains:
 - `tests/` - Development tests
 - `tools/` - Development tools
 
+## Features
+
+PyHDLio provides VHDL parsing and analysis capabilities including:
+
+- **VHDL Entity Parsing** - Parse VHDL files into structured AST representations
+- **Entity Reporting** - Generate formatted reports of entities with their generics and ports
+- **Port Grouping** - Display ports in both flat and grouped formats
+- **Error Handling** - Robust parsing with meaningful error messages
+
 ## Quick Start
 
 ```bash
@@ -28,6 +37,23 @@ pip install -e ./PyHDLio
 python PyHDLio/examples/vhdl/simple/simple.py
 ```
 
+## Usage Example
+
+```python
+from hdlio.vhdl.parse_vhdl import parse_vhdl
+from hdlio.vhdl.reporter import print_report
+
+# Parse VHDL file into AST
+module = parse_vhdl("your_file.vhd", mode='ast')
+
+# Generate entity reports
+print("=== Flat Ports ===")
+print_report(module, group_ports=False)
+
+print("=== Grouped Ports ===")
+print_report(module, group_ports=True)
+```
+
 ## Requirements
 
 - Python 3.8+
@@ -43,6 +69,12 @@ Install all dependencies with:
 ```bash
 pip install -r requirements.txt
 ```
+
+## Examples
+
+See comprehensive examples and documentation:
+
+**📁 [PyHDLio/examples/README.md](PyHDLio/examples/README.md)**
 
 ## Testing
 
