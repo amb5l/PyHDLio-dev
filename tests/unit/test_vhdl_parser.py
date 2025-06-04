@@ -1,7 +1,7 @@
 import pytest
 import os
-from PyHDLio.hdlio.vhdl.parse_vhdl import parse_vhdl, VHDLSyntaxError
-from PyHDLio.hdlio.vhdl import VHDLAST, Entity, report_entities
+from PyHDLio.hdlio.vhdl.model import VHDLAST, VHDLSyntaxError
+from PyHDLio.hdlio.vhdl import Entity, report_entities
 
 
 class TestVHDLParser:
@@ -13,28 +13,16 @@ class TestVHDLParser:
         self.life_signs_path = os.path.join(self.fixture_dir, 'life_signs.vhd')
         self.entity_with_ports_path = os.path.join(self.fixture_dir, 'entity_with_ports.vhd')
 
-    def test_parse_life_signs_vhdl(self):
-        """Test parsing the life_signs.vhd fixture returns valid string."""
-        result = parse_vhdl(self.life_signs_path)
-        
-        # Check that result is a string (tree representation)
-        assert isinstance(result, str)
-        assert len(result) > 0
-        
-        # Check that the result contains expected VHDL elements
-        assert 'life_signs' in result
-        assert 'entity' in result
-        
     def test_parse_life_signs_vhdl_ast(self):
-        """Test parsing the life_signs.vhd fixture in AST mode returns VHDLAST."""
-        result = parse_vhdl(self.life_signs_path, mode='ast')
+        """Test parsing the life_signs.vhd fixture returns VHDLAST."""
+        result = VHDLAST.from_file(self.life_signs_path)
         
         # Check that result is a VHDLAST
         assert isinstance(result, VHDLAST)
         
     def test_entity_reporting(self):
         """Test entity reporting functionality."""
-        result = parse_vhdl(self.life_signs_path, mode='ast')
+        result = VHDLAST.from_file(self.life_signs_path)
         
         # Test reporting
         report = report_entities(result)
@@ -46,7 +34,7 @@ class TestVHDLParser:
 
     def test_entity_with_ports_and_generics(self):
         """Test parsing entity with ports and generics."""
-        result = parse_vhdl(self.entity_with_ports_path, mode='ast')
+        result = VHDLAST.from_file(self.entity_with_ports_path)
         assert len(result.entities) == 1
 
         entity = result.entities[0]
@@ -92,7 +80,7 @@ class TestVHDLParser:
         non_existent_path = os.path.join(self.fixture_dir, 'does_not_exist.vhd')
         
         with pytest.raises(FileNotFoundError) as exc_info:
-            parse_vhdl(non_existent_path)
+            VHDLAST.from_file(non_existent_path)
         
         assert 'VHDL file not found' in str(exc_info.value)
         assert 'does_not_exist.vhd' in str(exc_info.value)
@@ -101,17 +89,56 @@ class TestVHDLParser:
         """Test that the parser handles file paths correctly."""
         # Test with absolute path 
         abs_path = os.path.abspath(self.life_signs_path)
-        result = parse_vhdl(abs_path)
-        assert isinstance(result, str)
-        assert 'life_signs' in result
+        result = VHDLAST.from_file(abs_path)
+        assert isinstance(result, VHDLAST)
+        assert len(result.entities) > 0
+        assert result.entities[0].name == "life_signs"
         
         # Test with relative path
         # Change to fixture directory and use relative path
         original_cwd = os.getcwd()
         try:
             os.chdir(self.fixture_dir)
-            result = parse_vhdl('life_signs.vhd')
-            assert isinstance(result, str)
-            assert 'life_signs' in result
+            result = VHDLAST.from_file('life_signs.vhd')
+            assert isinstance(result, VHDLAST)
+            assert len(result.entities) > 0
+            assert result.entities[0].name == "life_signs"
         finally:
             os.chdir(original_cwd)
+
+    def test_string_parsing(self):
+        """Test parsing VHDL code from string."""
+        vhdl_code = """
+        entity test_string_entity is
+          generic (
+            SIZE : natural := 8
+          );
+          port (
+            clk : in std_logic;
+            data : out std_logic_vector(SIZE-1 downto 0)
+          );
+        end entity;
+        """
+        
+        result = VHDLAST.from_string(vhdl_code)
+        assert isinstance(result, VHDLAST)
+        assert len(result.entities) == 1
+        assert result.entities[0].name == "test_string_entity"
+        assert len(result.entities[0].generics) == 1
+        assert len(result.entities[0].ports) == 2
+
+    def test_syntax_error_handling(self):
+        """Test that syntax errors are properly handled."""
+        invalid_vhdl = """
+        entity bad_syntax is
+          port (
+            clk : in std_logic  -- Missing semicolon
+            reset : in std_logic
+          );
+        end entity;
+        """
+        
+        with pytest.raises(VHDLSyntaxError) as exc_info:
+            VHDLAST.from_string(invalid_vhdl)
+        
+        assert "Syntax error" in str(exc_info.value)

@@ -90,14 +90,12 @@ def verify_installation():
         python_cmd = ".venv/bin/python"
     
     # Test basic imports
-    test_imports = [
-        "import hdlio.vhdl.parse_vhdl",
-        "import pyVHDLModel.DesignUnit",
-        "from hdlio.vhdl.converters.pyvhdlmodel_converter import convert_to_pyvhdlmodel",
-        "from hdlio.vhdl.reporter import report_entity"
+    imports_to_test = [
+        "from hdlio.vhdl.model import VHDLAST, VHDLSyntaxError",
+        "from hdlio.vhdl.ast import Entity, Generic, Port, PortGroup",
     ]
     
-    for test_import in test_imports:
+    for test_import in imports_to_test:
         if not run_command(f'{python_cmd} -c "{test_import}"'):
             print(f"   ERROR: Failed to import: {test_import}")
             return False

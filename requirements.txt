@@ -1,21 +1,24 @@
 # PyHDLio-dev Requirements
-# Complete development environment setup
 
 # Local packages (editable installs)
 -e ./PyHDLio
 -e ./pyVHDLModel
 
-# Core dependencies
+# Core dependencies for PyHDLio
 antlr4-python3-runtime>=4.13.2
-pyTooling>=8.4
+
+# Core dependencies for pyVHDLModel
+pyTooling==8.5.0
 
 # Testing and development tools
 pytest>=6.0
 pytest-cov>=2.12.0
+
+# Code quality tools
 black>=21.0.0
 mypy>=0.910
 flake8>=3.8
 
 # Optional development tools
-sphinx>=4.0  # For documentation
-pre-commit>=2.15.0  # For git hooks
+sphinx>=4.0           # For documentation
+pre-commit>=2.15.0    # For git hooks
