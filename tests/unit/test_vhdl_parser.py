@@ -1,7 +1,8 @@
 import pytest
 import os
-from PyHDLio.hdlio.vhdl.model import VHDLAST, VHDLSyntaxError
-from PyHDLio.hdlio.vhdl import Entity, report_entities
+from PyHDLio.pyhdlio.vhdl.model import VHDLAST, VHDLSyntaxError
+from PyHDLio.pyhdlio.vhdl import Entity
+from tests.utils.reporter import report_entities
 
 
 class TestVHDLParser:

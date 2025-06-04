@@ -9,8 +9,8 @@ import sys
 # Add PyHDLio package to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'PyHDLio'))
 
-from hdlio.vhdl.model import VHDLAST, Document
-from hdlio.vhdl import report_entities, report_entity
+from pyhdlio.vhdl.model import VHDLAST, Document
+from tests.utils.reporter import report_entities, report_entity
 
 # pyVHDLModel imports (required)
 from pyVHDLModel.DesignUnit import Entity as PyVHDLModelEntity
@@ -23,7 +23,7 @@ class TestEnhancedReporter(unittest.TestCase):
         self.simple_vhdl = os.path.join(
             os.path.dirname(__file__), '..', '..', 'PyHDLio', 'examples', 'vhdl', 'simple', 'simple.vhd'
         )
-        
+
         # Parse the simple VHDL file using new API
         if os.path.exists(self.simple_vhdl):
             self.simple_module = VHDLAST.from_file(self.simple_vhdl)
@@ -38,24 +38,24 @@ class TestEnhancedReporter(unittest.TestCase):
     def test_ast_entity_reporting(self):
         """Test detailed AST entity reporting."""
         report = report_entity(self.simple_entity)
-        
+
         # Check basic structure
         self.assertIn("Entity: counter", report)
-        
+
         # Check generics section
         self.assertIn("Generics:", report)
         self.assertIn("WIDTH", report)
         self.assertIn("DEPTH", report)
         self.assertIn("integer", report)
         self.assertIn("natural", report)
-        
+
         # Check ports section
         self.assertIn("Ports (flat):", report)
         self.assertIn("clk", report)
         self.assertIn("reset", report)
         self.assertIn("start", report)
         self.assertIn("count", report)
-        
+
         # Check port grouping
         self.assertIn("Ports (grouped):", report)
         self.assertIn("Group", report)
@@ -68,24 +68,24 @@ class TestEnhancedReporter(unittest.TestCase):
         # Convert to pyVHDLModel
         document = Document.from_file(self.simple_vhdl)
         entity = list(document.Entities.values())[0]
-        
+
         report = report_entity(entity)
-        
+
         # Check basic structure
         self.assertIn("Entity: counter", report)
-        
+
         # Check generics section
         self.assertIn("Generics:", report)
         self.assertIn("WIDTH", report)
         self.assertIn("DEPTH", report)
-        
+
         # Check ports section
         self.assertIn("Ports (flat):", report)
         self.assertIn("clk", report)
         self.assertIn("reset", report)
         self.assertIn("start", report)
         self.assertIn("count", report)
-        
+
         # Check port grouping
         self.assertIn("Ports (grouped):", report)
         self.assertIn("Group", report)
@@ -93,7 +93,7 @@ class TestEnhancedReporter(unittest.TestCase):
     def test_module_reporting(self):
         """Test reporting on entire VHDL module."""
         report = report_entities(self.simple_module)
-        
+
         # Should contain entity information
         self.assertIn("Entity: counter", report)
         self.assertIn("WIDTH", report)
@@ -106,12 +106,12 @@ class TestEnhancedReporter(unittest.TestCase):
         entity minimal is
         end entity;
         """
-        
+
         module = VHDLAST.from_string(minimal_vhdl)
         entity = module.entities[0]
-        
+
         report = report_entity(entity)
-        
+
         # Should handle empty generics and ports gracefully
         self.assertIn("Entity: minimal", report)
         self.assertIn("Generics: None", report)
@@ -128,12 +128,12 @@ class TestEnhancedReporter(unittest.TestCase):
           );
         end entity;
         """
-        
+
         module = VHDLAST.from_string(complex_vhdl)
         entity = module.entities[0]
-        
+
         report = report_entity(entity)
-        
+
         # Check complex type reporting
         self.assertIn("std_logic_vector", report)
         self.assertIn("31 downto 0", report)
@@ -143,15 +143,15 @@ class TestEnhancedReporter(unittest.TestCase):
     def test_report_formatting(self):
         """Test that reports are properly formatted."""
         report = report_entity(self.simple_entity)
-        
+
         # Check indentation and structure
         lines = report.split('\n')
-        
+
         # Find sections
         entity_line = None
         generics_line = None
         ports_line = None
-        
+
         for i, line in enumerate(lines):
             if line.startswith("Entity:"):
                 entity_line = i
@@ -159,7 +159,7 @@ class TestEnhancedReporter(unittest.TestCase):
                 generics_line = i
             elif line.startswith("Ports (flat):"):
                 ports_line = i
-        
+
         # Verify sections exist and are in order
         self.assertIsNotNone(entity_line)
         self.assertIsNotNone(generics_line)
@@ -174,12 +174,12 @@ class TestEnhancedReporter(unittest.TestCase):
         """Test that AST and Document reporting produce consistent results."""
         # Get AST report
         ast_report = report_entity(self.simple_entity)
-        
+
         # Get Document report
         document = Document.from_file(self.simple_vhdl)
         doc_entity = list(document.Entities.values())[0]
         doc_report = report_entity(doc_entity)
-        
+
         # Both should contain the same essential information
         essential_info = ["Entity: counter", "WIDTH", "DEPTH", "clk", "reset", "start", "count"]
         for info in essential_info:
@@ -199,12 +199,12 @@ class TestEnhancedReporter(unittest.TestCase):
           );
         end entity;
         """
-        
+
         module = VHDLAST.from_string(vhdl_string)
         entity = module.entities[0]
-        
+
         report = report_entity(entity)
-        
+
         self.assertIn("Entity: string_entity", report)
         self.assertIn("TEST_PARAM", report)
         self.assertIn("input_sig", report)

@@ -10,8 +10,8 @@ from typing import List
 # Add PyHDLio package to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'PyHDLio'))
 
-from hdlio.vhdl.model import VHDLAST, Document
-from hdlio.vhdl.ast import Entity as PyHDLioEntity
+from pyhdlio.vhdl.model import VHDLAST, Document
+from pyhdlio.vhdl.ast import Entity as PyHDLioEntity
 
 # pyVHDLModel imports (required)
 from pyVHDLModel.DesignUnit import Entity as PyVHDLModelEntity
@@ -27,7 +27,7 @@ class TestPyVHDLModelConverter(unittest.TestCase):
         self.simple_vhdl = os.path.join(
             os.path.dirname(__file__), '..', '..', 'PyHDLio', 'examples', 'vhdl', 'simple', 'simple.vhd'
         )
-        
+
         # Parse the simple VHDL file using new API
         if os.path.exists(self.simple_vhdl):
             self.simple_module = VHDLAST.from_file(self.simple_vhdl)
@@ -112,7 +112,7 @@ class TestPyVHDLModelConverter(unittest.TestCase):
 
     def test_generic_conversion_types(self):
         """Test generic conversion with different default value types."""
-        from hdlio.vhdl.ast import Generic
+        from pyhdlio.vhdl.ast import Generic
 
         # Test integer default
         int_generic = Generic("TEST_INT", "integer", "42")
@@ -133,7 +133,7 @@ class TestPyVHDLModelConverter(unittest.TestCase):
 
     def test_port_mode_mapping(self):
         """Test port mode mapping functionality."""
-        from hdlio.vhdl.ast import Port
+        from pyhdlio.vhdl.ast import Port
 
         # Test input port
         in_port = Port("test_in", "in", "std_logic")
@@ -164,7 +164,7 @@ class TestPyVHDLModelConverter(unittest.TestCase):
     def test_error_handling(self):
         """Test error handling in conversion."""
         # Test with invalid generic (should handle gracefully)
-        from hdlio.vhdl.ast import Generic
+        from pyhdlio.vhdl.ast import Generic
         invalid_generic = Generic(None, None, None)  # Invalid data
 
         # Should handle gracefully through Document conversion
@@ -219,11 +219,11 @@ class TestPyVHDLModelConverter(unittest.TestCase):
     def test_new_document_api(self):
         """Test the new Document.from_file() API."""
         document = Document.from_file(self.simple_vhdl)
-        
+
         # Verify Document structure
         self.assertEqual(len(document.Entities), 1)
         entity = list(document.Entities.values())[0]
-        
+
         self.assertEqual(entity.Identifier, "counter")
         self.assertEqual(len(entity.GenericItems), 2)
         self.assertEqual(len(entity.PortItems), 4)
