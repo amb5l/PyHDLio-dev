@@ -97,7 +97,7 @@
 1. **Create `PyHDLio/hdlio/vhdl/visitor.py`**:
    ```python
    from antlr4 import ParseTreeVisitor, Token
-   from hdlio.grammar.vhdlParser import vhdlParser
+   from pyhdlio.vhdl.grammar.vhdlParser import vhdlParser
    from .ast.ast import Generic, Port, PortGroup, Entity, VHDLModule
 
    class VHDLVisitor(ParseTreeVisitor):
@@ -228,8 +228,8 @@
    ```python
    from antlr4 import *
    from antlr4.error.ErrorListener import ErrorListener
-   from hdlio.grammar.vhdlLexer import vhdlLexer
-   from hdlio.grammar.vhdlParser import vhdlParser
+   from pyhdlio.vhdl.grammar.vhdlLexer import vhdlLexer
+from pyhdlio.vhdl.grammar.vhdlParser import vhdlParser
    from .visitor import VHDLVisitor
    from .ast.ast import VHDLModule
 
