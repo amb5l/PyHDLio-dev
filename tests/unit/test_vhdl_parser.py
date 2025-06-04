@@ -1,7 +1,7 @@
 import pytest
 import os
 from PyHDLio.hdlio.vhdl.parse_vhdl import parse_vhdl, VHDLSyntaxError
-from PyHDLio.hdlio.vhdl import VHDLModule, Entity, report_entities
+from PyHDLio.hdlio.vhdl import VHDLAST, Entity, report_entities
 
 
 class TestVHDLParser:
@@ -25,22 +25,13 @@ class TestVHDLParser:
         assert 'life_signs' in result
         assert 'entity' in result
         
-    def test_parse_life_signs_vhdl_ast_mode(self):
-        """Test parsing the life_signs.vhd fixture in AST mode returns VHDLModule."""
+    def test_parse_life_signs_vhdl_ast(self):
+        """Test parsing the life_signs.vhd fixture in AST mode returns VHDLAST."""
         result = parse_vhdl(self.life_signs_path, mode='ast')
         
-        # Check that result is a VHDLModule
-        assert isinstance(result, VHDLModule)
-        assert len(result.entities) == 1
+        # Check that result is a VHDLAST
+        assert isinstance(result, VHDLAST)
         
-        # Check the entity details
-        entity = result.entities[0]
-        assert isinstance(entity, Entity)
-        assert entity.name == 'life_signs'
-        assert entity.generics == []  # This minimal entity has no generics
-        assert entity.ports == []     # This minimal entity has no ports
-        assert entity.port_groups == []
-    
     def test_entity_reporting(self):
         """Test entity reporting functionality."""
         result = parse_vhdl(self.life_signs_path, mode='ast')

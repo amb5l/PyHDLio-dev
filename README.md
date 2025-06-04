@@ -2,36 +2,62 @@
 
 This is the **development repository** for PyHDLio. It contains:
 - `PyHDLio/` - The main functional repository (standalone)
+- `pyVHDLModel/` - A fork of the pyVHDLModel repository with port group support
 - `tests/` - Development tests
 - `tools/` - Development tools
 
-## Features
-
-PyHDLio provides VHDL parsing and analysis capabilities including:
-
-- **VHDL Entity Parsing** - Parse VHDL files into structured AST representations
-- **Entity Reporting** - Generate formatted reports of entities with their generics and ports
-- **Port Grouping** - Display ports in both flat and grouped formats
-- **Error Handling** - Robust parsing with meaningful error messages
+Read more about PyHDLio [here](PyHDLio/README.md).
 
 ## Quick Start
+
+### Option 1: Automated Setup (Recommended)
 
 ```bash
 # Clone and setup
 git clone <repository-url>
 cd PyHDLio-dev
 
+# Run automated setup script
+python setup_env.py
+```
+
+The setup script will:
+- ✅ Initialize git submodules (PyHDLio and pyVHDLModel)
+- ✅ Create virtual environment
+- ✅ Install all local packages and dependencies
+- ✅ Verify installation with tests
+
+### Option 2: Manual Setup
+
+```bash
+# Clone and setup
+git clone <repository-url>
+cd PyHDLio-dev
+
+# Initialize submodules (if not done automatically)
+git submodule update --init --recursive
+
 # Create and activate virtual environment
 python -m venv .venv
+.venv\Scripts\activate.bat  # Windows Command Prompt
+# or
 .venv\Scripts\Activate.ps1  # Windows PowerShell
 # or
 source .venv/bin/activate   # Linux/Mac
 
-# Install all dependencies (including pytest and development tools)
+# Install everything (local packages + dependencies + dev tools)
 pip install -r requirements.txt
+```
 
-# Install the hdlio package
-pip install -e ./PyHDLio
+### Run Example
+
+```bash
+# After setup, activate environment if not already active
+# Windows:
+.venv\Scripts\activate
+
+# Linux/Mac:
+source .venv/bin/activate
 
 # Run example
 python PyHDLio/examples/vhdl/simple/simple.py
@@ -56,19 +82,30 @@ print_report(module, group_ports=True)
 
 ## Requirements
 
-- Python 3.8+
-- Dependencies are listed in `requirements.txt` including:
-  - antlr4-python3-runtime>=4.13.2
-  - pytest>=6.0 (for testing)
-  - pytest-cov>=2.12.0 (for coverage)
-  - flake8>=3.8 (for linting)
-  - mypy>=0.910 (for type checking)
-  - black>=21.0.0 (for code formatting)
+This development repository includes everything in one `requirements.txt`:
 
-Install all dependencies with:
-```bash
-pip install -r requirements.txt
-```
+- **Local Packages (Editable):**
+  - ✅ PyHDLio package (`-e ./PyHDLio`)
+  - ✅ pyVHDLModel package (`-e ./pyVHDLModel`)
+
+- **Core Dependencies:**
+  - `antlr4-python3-runtime>=4.13.2` - ANTLR runtime for parsing
+  - `pyTooling>=8.4` - Tooling utilities
+
+- **Development Tools:**
+  - `pytest>=6.0` - Testing framework
+  - `pytest-cov>=2.12.0` - Test coverage
+  - `black>=21.0.0` - Code formatting  
+  - `mypy>=0.910` - Type checking
+  - `flake8>=3.8` - Linting
+  - `sphinx>=4.0` - Documentation
+  - `pre-commit>=2.15.0` - Git hooks
+
+## Requirements
+
+- Python 3.8+
+- Git (for submodules)
+- Everything else installed automatically from `requirements.txt`
 
 ## Examples
 
@@ -82,10 +119,13 @@ This project includes a comprehensive test suite to ensure code quality and reli
 
 ### Quick Test Run
 
-After following the Quick Start setup above, simply run:
+After setup, run tests:
 
 ```bash
-# Run all tests
+# Run all integration tests
+python tests/run_tests.py
+
+# Or with pytest
 python -m pytest tests/ -v
 ```
 
