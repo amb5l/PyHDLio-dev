@@ -15,5 +15,14 @@ dist/
 tests/*.pyc
 tests/__pycache__/
 
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+.hypothesis/
+
 # Temporary files
 temp/
