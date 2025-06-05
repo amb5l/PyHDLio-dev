@@ -1,0 +1,11 @@
+{
+    "python.defaultInterpreter": "./.venv/Scripts/python.exe",
+    "python.pythonPath": "./.venv/Scripts/python.exe",
+    "python.analysis.extraPaths": [
+        "./PyHDLioVHDLModel"
+    ],
+    "python.envFile": "${workspaceFolder}/.env",
+    "pylance.typeCheckingMode": "basic",
+    "python.terminal.activateEnvironment": true,
+    "python.terminal.activateEnvInCurrentTerminal": true
+}
