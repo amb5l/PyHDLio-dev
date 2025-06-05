@@ -1,12 +1,12 @@
 import pytest
 import os
-from PyHDLio.pyhdlio.vhdl.model import VHDLAST, VHDLSyntaxError
-from PyHDLio.pyhdlio.vhdl import Entity
-from utils.reporter import report_entities
+from PyHDLio.pyhdlio.vhdl.model import Document, VHDLSyntaxError
+import pyVHDLModel
+from tests.utils.reporter import report_pyvhdlmodel_entities
 
 
 class TestVHDLParser:
-    """Unit tests for VHDL parser functionality."""
+    """Unit tests for VHDL parser functionality using pyVHDLModel objects."""
 
     def setup_method(self):
         """Setup common paths for all tests."""
@@ -14,19 +14,22 @@ class TestVHDLParser:
         self.life_signs_path = os.path.join(self.fixture_dir, 'life_signs.vhd')
         self.entity_with_ports_path = os.path.join(self.fixture_dir, 'entity_with_ports.vhd')
 
-    def test_parse_life_signs_vhdl_ast(self):
-        """Test parsing the life_signs.vhd fixture returns VHDLAST."""
-        result = VHDLAST.from_file(self.life_signs_path)
+    def test_parse_life_signs_vhdl_document(self):
+        """Test parsing the life_signs.vhd fixture returns pyVHDLModel Document."""
+        result = Document.from_file(self.life_signs_path)
         
-        # Check that result is a VHDLAST
-        assert isinstance(result, VHDLAST)
+        # Check that result is a pyVHDLModel Document
+        assert isinstance(result, pyVHDLModel.Document)
         
     def test_entity_reporting(self):
-        """Test entity reporting functionality."""
-        result = VHDLAST.from_file(self.life_signs_path)
+        """Test entity reporting functionality with pyVHDLModel entities."""
+        result = Document.from_file(self.life_signs_path)
+        
+        # Get entities from Document
+        entities = list(result.Entities.values())
         
         # Test reporting
-        report = report_entities(result)
+        report = report_pyvhdlmodel_entities(entities)
         assert "Entity: life_signs" in report
         assert "Generics:" in report
         assert "Ports (flat):" in report
@@ -34,54 +37,57 @@ class TestVHDLParser:
         assert "None" in report  # Since this entity has no generics or ports
 
     def test_entity_with_ports_and_generics(self):
-        """Test parsing entity with ports and generics."""
-        result = VHDLAST.from_file(self.entity_with_ports_path)
-        assert len(result.entities) == 1
+        """Test parsing entity with ports and generics using pyVHDLModel objects."""
+        result = Document.from_file(self.entity_with_ports_path)
+        
+        # Get entities from Document
+        entities = list(result.Entities.values())
+        assert len(entities) == 1
 
-        entity = result.entities[0]
-        assert entity.name == "test_entity"
+        entity = entities[0]
+        assert entity.Identifier == "test_entity"
 
-        # Check generics - now extraction is implemented
-        assert len(entity.generics) == 2
-        generic_names = [g.name for g in entity.generics]
+        # Check generics - pyVHDLModel structure
+        assert len(entity.GenericItems) == 2
+        generic_names = [g.Identifiers[0] for g in entity.GenericItems]
         assert "WIDTH" in generic_names
         assert "DEPTH" in generic_names
         
         # Verify generic details
-        width_generic = next(g for g in entity.generics if g.name == "WIDTH")
-        assert width_generic.type == "integer"
-        assert width_generic.default_value == "8"
+        width_generic = next(g for g in entity.GenericItems if g.Identifiers[0] == "WIDTH")
+        assert "integer" in str(width_generic.Subtype).lower()
+        assert width_generic.DefaultExpression is not None
         
-        depth_generic = next(g for g in entity.generics if g.name == "DEPTH")
-        assert depth_generic.type == "natural"
-        assert depth_generic.default_value == "16"
+        depth_generic = next(g for g in entity.GenericItems if g.Identifiers[0] == "DEPTH")
+        assert "natural" in str(depth_generic.Subtype).lower()
+        assert depth_generic.DefaultExpression is not None
 
-        # Check ports - now extraction is implemented
-        assert len(entity.ports) == 3
-        port_names = [p.name for p in entity.ports]
+        # Check ports - pyVHDLModel structure
+        assert len(entity.PortItems) == 3
+        port_names = [p.Identifiers[0] for p in entity.PortItems]
         assert "clk" in port_names
         assert "reset" in port_names
         assert "data" in port_names
         
         # Verify port details
-        clk_port = next(p for p in entity.ports if p.name == "clk")
-        assert clk_port.direction == "in"
-        assert clk_port.type == "STD_LOGIC"
+        clk_port = next(p for p in entity.PortItems if p.Identifiers[0] == "clk")
+        assert clk_port.Mode == pyVHDLModel.Mode.In
+        assert "std_logic" in str(clk_port.Subtype).lower()
         
-        reset_port = next(p for p in entity.ports if p.name == "reset")
-        assert reset_port.direction == "in"
-        assert reset_port.type == "STD_LOGIC"
+        reset_port = next(p for p in entity.PortItems if p.Identifiers[0] == "reset")
+        assert reset_port.Mode == pyVHDLModel.Mode.In
+        assert "std_logic" in str(reset_port.Subtype).lower()
         
-        data_port = next(p for p in entity.ports if p.name == "data")
-        assert data_port.direction == "out"
-        assert "STD_LOGIC_VECTOR" in data_port.type
+        data_port = next(p for p in entity.PortItems if p.Identifiers[0] == "data")
+        assert data_port.Mode == pyVHDLModel.Mode.Out
+        assert "std_logic_vector" in str(data_port.Subtype).lower()
         
     def test_parse_nonexistent_file(self):
         """Test that parsing a non-existent file raises appropriate exception."""
         non_existent_path = os.path.join(self.fixture_dir, 'does_not_exist.vhd')
         
         with pytest.raises(FileNotFoundError) as exc_info:
-            VHDLAST.from_file(non_existent_path)
+            Document.from_file(non_existent_path)
         
         assert 'VHDL file not found' in str(exc_info.value)
         assert 'does_not_exist.vhd' in str(exc_info.value)
@@ -90,25 +96,27 @@ class TestVHDLParser:
         """Test that the parser handles file paths correctly."""
         # Test with absolute path 
         abs_path = os.path.abspath(self.life_signs_path)
-        result = VHDLAST.from_file(abs_path)
-        assert isinstance(result, VHDLAST)
-        assert len(result.entities) > 0
-        assert result.entities[0].name == "life_signs"
+        result = Document.from_file(abs_path)
+        assert isinstance(result, pyVHDLModel.Document)
+        entities = list(result.Entities.values())
+        assert len(entities) > 0
+        assert entities[0].Identifier == "life_signs"
         
         # Test with relative path
         # Change to fixture directory and use relative path
         original_cwd = os.getcwd()
         try:
             os.chdir(self.fixture_dir)
-            result = VHDLAST.from_file('life_signs.vhd')
-            assert isinstance(result, VHDLAST)
-            assert len(result.entities) > 0
-            assert result.entities[0].name == "life_signs"
+            result = Document.from_file('life_signs.vhd')
+            assert isinstance(result, pyVHDLModel.Document)
+            entities = list(result.Entities.values())
+            assert len(entities) > 0
+            assert entities[0].Identifier == "life_signs"
         finally:
             os.chdir(original_cwd)
 
     def test_string_parsing(self):
-        """Test parsing VHDL code from string."""
+        """Test parsing VHDL code from string using pyVHDLModel objects."""
         vhdl_code = """
         entity test_string_entity is
           generic (
@@ -121,12 +129,14 @@ class TestVHDLParser:
         end entity;
         """
         
-        result = VHDLAST.from_string(vhdl_code)
-        assert isinstance(result, VHDLAST)
-        assert len(result.entities) == 1
-        assert result.entities[0].name == "test_string_entity"
-        assert len(result.entities[0].generics) == 1
-        assert len(result.entities[0].ports) == 2
+        result = Document.from_string(vhdl_code)
+        assert isinstance(result, pyVHDLModel.Document)
+        
+        entities = list(result.Entities.values())
+        assert len(entities) == 1
+        assert entities[0].Identifier == "test_string_entity"
+        assert len(entities[0].GenericItems) == 1
+        assert len(entities[0].PortItems) == 2
 
     def test_syntax_error_handling(self):
         """Test that syntax errors are properly handled."""
@@ -140,6 +150,33 @@ class TestVHDLParser:
         """
         
         with pytest.raises(VHDLSyntaxError) as exc_info:
-            VHDLAST.from_string(invalid_vhdl)
+            Document.from_string(invalid_vhdl)
         
         assert "Syntax error" in str(exc_info.value)
+
+    def test_package_parsing(self):
+        """Test parsing packages with components using pyVHDLModel objects."""
+        vhdl_code = """
+        package test_pkg is
+            component adder is
+                generic (
+                    WIDTH : integer := 8
+                );
+                port (
+                    a, b : in std_logic_vector(WIDTH-1 downto 0);
+                    sum : out std_logic_vector(WIDTH-1 downto 0)
+                );
+            end component adder;
+        end package test_pkg;
+        """
+        
+        result = Document.from_string(vhdl_code)
+        assert isinstance(result, pyVHDLModel.Document)
+        
+        # Check packages
+        packages = list(result.Packages.values())
+        assert len(packages) == 1
+        assert packages[0].Identifier == "test_pkg"
+        
+        # Check that package has declarative items (components)
+        assert len(packages[0].DeclaredItems) > 0

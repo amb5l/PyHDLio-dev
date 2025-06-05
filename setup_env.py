@@ -82,8 +82,8 @@ def verify_installation():
 
     # Test basic imports
     imports_to_test = [
-        "from pyhdlio.vhdl.model import VHDLAST, VHDLSyntaxError",
-        "from pyhdlio.vhdl.ast import Entity, Generic, Port, PortGroup",
+        "from pyhdlio.vhdl.model import Document, VHDLSyntaxError",
+        "import pyVHDLModel",
     ]
 
     for test_import in imports_to_test:
