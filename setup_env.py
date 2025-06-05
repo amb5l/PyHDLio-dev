@@ -36,7 +36,7 @@ def run_command(cmd, description=None):
 def check_git_submodules():
     """Check if git submodules are initialized."""
     pyhdlio_path = Path("PyHDLio")
-    pyvhdlmodel_path = Path("pyVHDLModel")
+    pyvhdlmodel_path = Path("PyHDLioVHDLModel")
 
     if not (pyhdlio_path.exists() and pyvhdlmodel_path.exists()):
         print(">> Initializing git submodules...")
