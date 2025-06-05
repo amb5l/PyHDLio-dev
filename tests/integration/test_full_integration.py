@@ -9,9 +9,12 @@ import sys
 # Add PyHDLio package to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'PyHDLio'))
 
+# Add tests directory to path for utility imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 from pyhdlio.vhdl.model import Document, VHDLSyntaxError
 import pyVHDLModel
-from tests.utils.reporter import report_pyvhdlmodel_entities
+from utils.reporter import report_pyvhdlmodel_entities
 
 
 class TestFullIntegration(unittest.TestCase):
@@ -20,23 +23,24 @@ class TestFullIntegration(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.simple_vhdl = os.path.join(
-            os.path.dirname(__file__), '..', '..', 'PyHDLio', 'examples', 'vhdl', 'simple', 'simple.vhd'
+            os.path.dirname(__file__), '..', '..', 'PyHDLio', 'examples', 'vhdl_in', 'sample.vhd'
         )
 
     def test_basic_parsing_pipeline(self):
         """Test basic VHDL parsing pipeline returning pyVHDLModel Document."""
         # Parse using Document API directly
-        document = Document.from_file(self.simple_vhdl)
+        document = Document.FromFile(self.simple_vhdl)
 
         # Verify basic structure
         self.assertIsInstance(document, pyVHDLModel.Document)
         entities = list(document.Entities.values())
-        self.assertEqual(len(entities), 1)
+        self.assertEqual(len(entities), 2)
 
-        entity = entities[0]
-        self.assertEqual(entity.Identifier, "counter")
-        self.assertGreater(len(entity.GenericItems), 0)
-        self.assertGreater(len(entity.PortItems), 0)
+        # Use the processor entity which is more complex
+        processor_entity = entities[1]
+        self.assertEqual(processor_entity.Identifier, "processor")
+        self.assertEqual(len(processor_entity.GenericItems), 4)
+        self.assertEqual(len(processor_entity.PortItems), 15)
 
     def test_string_parsing(self):
         """Test parsing VHDL from string."""
@@ -52,7 +56,7 @@ class TestFullIntegration(unittest.TestCase):
         end entity;
         """
 
-        document = Document.from_string(vhdl_code)
+        document = Document.FromStr(vhdl_code)
         entities = list(document.Entities.values())
         self.assertEqual(len(entities), 1)
         self.assertEqual(entities[0].Identifier, "test_string")
@@ -60,25 +64,27 @@ class TestFullIntegration(unittest.TestCase):
     def test_document_api_pipeline(self):
         """Test Document API pipeline."""
         # Parse directly to Document
-        document = Document.from_file(self.simple_vhdl)
+        document = Document.FromFile(self.simple_vhdl)
 
         # Verify structure
         entities = list(document.Entities.values())
-        self.assertEqual(len(entities), 1)
-        entity = entities[0]
-        self.assertEqual(entity.Identifier, "counter")
+        self.assertEqual(len(entities), 2)  # simple_gate and processor
+        # Find simple_gate entity
+        simple_gate = next((e for e in entities if e.Identifier == "simple_gate"), None)
+        self.assertIsNotNone(simple_gate)
 
     def test_reporting_pipeline(self):
         """Test reporting functionality with parsed entities."""
-        document = Document.from_file(self.simple_vhdl)
+        document = Document.FromFile(self.simple_vhdl)
         entities = list(document.Entities.values())
 
         # Generate report
         report = report_pyvhdlmodel_entities(entities)
 
         # Verify report content
-        self.assertIn("Entity: counter", report)
+        self.assertIn("Entity: processor", report)
         self.assertIn("Generics:", report)
+        self.assertIn("DATA_WIDTH", report)
         self.assertIn("Ports (flat):", report)
         self.assertIn("Ports (grouped):", report)
 
@@ -86,45 +92,47 @@ class TestFullIntegration(unittest.TestCase):
         """Test error handling throughout the pipeline."""
         # Test file not found
         with self.assertRaises(FileNotFoundError):
-            Document.from_file("nonexistent.vhd")
+            Document.FromFile("nonexistent.vhd")
 
         # Test syntax error
         invalid_vhdl = "entity bad_syntax is port ( clk in std_logic invalid_syntax ); end entity;"
         with self.assertRaises(VHDLSyntaxError):
-            Document.from_string(invalid_vhdl)
+            Document.FromStr(invalid_vhdl)
 
     def test_generics_and_ports_extraction(self):
         """Test detailed extraction of generics and ports."""
-        document = Document.from_file(self.simple_vhdl)
+        document = Document.FromFile(self.simple_vhdl)
         entities = list(document.Entities.values())
-        entity = entities[0]
+        processor_entity = entities[1]  # Use processor entity
 
         # Test generics
-        self.assertEqual(len(entity.GenericItems), 2)
-        generic_names = [g.Identifiers[0] for g in entity.GenericItems]
-        self.assertIn("WIDTH", generic_names)
-        self.assertIn("DEPTH", generic_names)
+        self.assertEqual(len(processor_entity.GenericItems), 4)
+        generic_names = [g.Identifiers[0] for g in processor_entity.GenericItems]
+        self.assertIn("DATA_WIDTH", generic_names)
+        self.assertIn("ADDR_WIDTH", generic_names)
+        self.assertIn("CACHE_SIZE", generic_names)
+        self.assertIn("ENABLE_CACHE", generic_names)
 
         # Test ports
-        self.assertEqual(len(entity.PortItems), 4)
-        port_names = [p.Identifiers[0] for p in entity.PortItems]
+        self.assertEqual(len(processor_entity.PortItems), 15)
+        port_names = [p.Identifiers[0] for p in processor_entity.PortItems]
         self.assertIn("clk", port_names)
         self.assertIn("reset", port_names)
-        self.assertIn("start", port_names)
-        self.assertIn("count", port_names)
+        self.assertIn("inst_addr", port_names)
+        self.assertIn("data_addr", port_names)
 
     def test_port_grouping_functionality(self):
         """Test port grouping preservation through pipeline."""
-        document = Document.from_file(self.simple_vhdl)
+        document = Document.FromFile(self.simple_vhdl)
         entities = list(document.Entities.values())
-        entity = entities[0]
+        processor_entity = entities[1]  # Use processor entity
 
         # Verify port groups exist if any
-        if hasattr(entity, 'PortGroups') and entity.PortGroups:
-            self.assertGreater(len(entity.PortGroups), 0)
+        if hasattr(processor_entity, 'PortGroups') and processor_entity.PortGroups:
+            self.assertGreater(len(processor_entity.PortGroups), 0)
             # Verify groups contain correct port items
-            total_grouped_ports = sum(len(group.PortItems) for group in entity.PortGroups)
-            self.assertEqual(total_grouped_ports, len(entity.PortItems))
+            total_grouped_ports = sum(len(group.PortItems) for group in processor_entity.PortGroups)
+            self.assertEqual(total_grouped_ports, len(processor_entity.PortItems))
 
     def test_package_parsing(self):
         """Test parsing VHDL packages with components."""
@@ -144,7 +152,7 @@ class TestFullIntegration(unittest.TestCase):
         end package test_pkg;
         """
         
-        document = Document.from_string(vhdl_code)
+        document = Document.FromStr(vhdl_code)
         
         # Check packages
         packages = list(document.Packages.values())
@@ -172,7 +180,7 @@ class TestFullIntegration(unittest.TestCase):
         end entity test_entity;
         """
         
-        document = Document.from_string(vhdl_code)
+        document = Document.FromStr(vhdl_code)
         
         # Check both packages and entities
         packages = list(document.Packages.values())

@@ -9,8 +9,11 @@ import sys
 # Add PyHDLio package to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'PyHDLio'))
 
+# Add tests directory to path for utility imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 from pyhdlio.vhdl.model import Document
-from tests.utils.reporter import report_pyvhdlmodel_entities, report_entity
+from utils.reporter import report_pyvhdlmodel_entities, report_entity
 
 # pyVHDLModel imports
 from pyVHDLModel.DesignUnit import Entity as PyVHDLModelEntity
@@ -21,39 +24,43 @@ class TestEnhancedReporter(unittest.TestCase):
     def setUp(self):
         """Set up test cases."""
         self.simple_vhdl = os.path.join(
-            os.path.dirname(__file__), '..', '..', 'PyHDLio', 'examples', 'vhdl', 'simple', 'simple.vhd'
+            os.path.dirname(__file__), '..', '..', 'PyHDLio', 'examples', 'vhdl_in', 'sample.vhd'
         )
 
         # Parse the simple VHDL file using Document API
         if os.path.exists(self.simple_vhdl):
-            self.simple_document = Document.from_file(self.simple_vhdl)
+            self.simple_document = Document.FromFile(self.simple_vhdl)
             entities = list(self.simple_document.Entities.values())
-            self.simple_entity = entities[0] if entities else None
+            # Use the processor entity which has generics and complex ports
+            self.simple_entity = entities[1] if len(entities) > 1 else entities[0] if entities else None
         else:
             self.simple_document = None
             self.simple_entity = None
 
     @unittest.skipUnless(os.path.exists(os.path.join(
-        os.path.dirname(__file__), '..', '..', 'PyHDLio', 'examples', 'vhdl', 'simple', 'simple.vhd'
-    )), "Simple VHDL file not found")
+        os.path.dirname(__file__), '..', '..', 'PyHDLio', 'examples', 'vhdl_in', 'sample.vhd'
+    )), "Sample VHDL file not found")
     def test_pyvhdlmodel_entity_reporting(self):
         """Test pyVHDLModel entity reporting."""
         report = report_entity(self.simple_entity)
 
         # Check basic structure
-        self.assertIn("Entity: counter", report)
+        self.assertIn("Entity: processor", report)
 
         # Check generics section
         self.assertIn("Generics:", report)
-        self.assertIn("WIDTH", report)
-        self.assertIn("DEPTH", report)
+        self.assertIn("DATA_WIDTH", report)
+        self.assertIn("ADDR_WIDTH", report)
+        self.assertIn("CACHE_SIZE", report)
+        self.assertIn("ENABLE_CACHE", report)
 
         # Check ports section
         self.assertIn("Ports (flat):", report)
         self.assertIn("clk", report)
         self.assertIn("reset", report)
-        self.assertIn("start", report)
-        self.assertIn("count", report)
+        self.assertIn("inst_addr", report)
+        self.assertIn("data_addr", report)
+        self.assertIn("interrupt", report)
 
         # Check port grouping
         self.assertIn("Ports (grouped):", report)
@@ -64,9 +71,10 @@ class TestEnhancedReporter(unittest.TestCase):
         report = report_pyvhdlmodel_entities(entities)
 
         # Should contain entity information
-        self.assertIn("Entity: counter", report)
-        self.assertIn("WIDTH", report)
+        self.assertIn("Entity: processor", report)
+        self.assertIn("DATA_WIDTH", report)
         self.assertIn("clk", report)
+        self.assertIn("inst_addr", report)
 
     def test_empty_sections_handling(self):
         """Test reporting handles entities with missing sections gracefully."""
@@ -76,7 +84,7 @@ class TestEnhancedReporter(unittest.TestCase):
         end entity;
         """
 
-        document = Document.from_string(minimal_vhdl)
+        document = Document.FromStr(minimal_vhdl)
         entities = list(document.Entities.values())
         entity = entities[0]
 
@@ -100,7 +108,7 @@ class TestEnhancedReporter(unittest.TestCase):
         end entity;
         """
 
-        document = Document.from_string(complex_vhdl)
+        document = Document.FromStr(complex_vhdl)
         entities = list(document.Entities.values())
         entity = entities[0]
 
@@ -154,7 +162,7 @@ class TestEnhancedReporter(unittest.TestCase):
         end entity;
         """
 
-        document = Document.from_string(vhdl_string)
+        document = Document.FromStr(vhdl_string)
         entities = list(document.Entities.values())
         entity = entities[0]
 
@@ -184,7 +192,7 @@ class TestEnhancedReporter(unittest.TestCase):
         end entity test_entity;
         """
         
-        document = Document.from_string(mixed_vhdl)
+        document = Document.FromStr(mixed_vhdl)
         
         # Test entity reporting
         entities = list(document.Entities.values())
@@ -213,7 +221,7 @@ class TestEnhancedReporter(unittest.TestCase):
         end package test_pkg;
         """
         
-        document = Document.from_string(package_vhdl)
+        document = Document.FromStr(package_vhdl)
         
         # Check that packages were parsed successfully
         packages = list(document.Packages.values())

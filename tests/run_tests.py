@@ -13,8 +13,10 @@ import os
 # Add PyHDLio package to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'PyHDLio'))
 
+# Add tests directory to path for utility imports
+sys.path.insert(0, os.path.dirname(__file__))
+
 # Import all test modules
-from integration.test_pyvhdlmodel_converter import TestPyVHDLModelConverter
 from integration.test_enhanced_reporter import TestEnhancedReporter
 from integration.test_full_integration import TestFullIntegration
 
@@ -22,9 +24,6 @@ def create_test_suite():
     """Create a comprehensive test suite."""
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-
-    # Add converter tests
-    suite.addTests(loader.loadTestsFromTestCase(TestPyVHDLModelConverter))
 
     # Add reporter tests
     suite.addTests(loader.loadTestsFromTestCase(TestEnhancedReporter))
