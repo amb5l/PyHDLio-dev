@@ -16,14 +16,14 @@ class TestVHDLParser:
 
     def test_parse_life_signs_vhdl_document(self):
         """Test parsing the life_signs.vhd fixture returns pyVHDLModel Document."""
-        result = Document.from_file(self.life_signs_path)
+        result = Document.FromFile(self.life_signs_path)
         
         # Check that result is a pyVHDLModel Document
         assert isinstance(result, pyVHDLModel.Document)
         
     def test_entity_reporting(self):
         """Test entity reporting functionality with pyVHDLModel entities."""
-        result = Document.from_file(self.life_signs_path)
+        result = Document.FromFile(self.life_signs_path)
         
         # Get entities from Document
         entities = list(result.Entities.values())
@@ -38,7 +38,7 @@ class TestVHDLParser:
 
     def test_entity_with_ports_and_generics(self):
         """Test parsing entity with ports and generics using pyVHDLModel objects."""
-        result = Document.from_file(self.entity_with_ports_path)
+        result = Document.FromFile(self.entity_with_ports_path)
         
         # Get entities from Document
         entities = list(result.Entities.values())
@@ -87,7 +87,7 @@ class TestVHDLParser:
         non_existent_path = os.path.join(self.fixture_dir, 'does_not_exist.vhd')
         
         with pytest.raises(FileNotFoundError) as exc_info:
-            Document.from_file(non_existent_path)
+            Document.FromFile(non_existent_path)
         
         assert 'VHDL file not found' in str(exc_info.value)
         assert 'does_not_exist.vhd' in str(exc_info.value)
@@ -96,7 +96,7 @@ class TestVHDLParser:
         """Test that the parser handles file paths correctly."""
         # Test with absolute path 
         abs_path = os.path.abspath(self.life_signs_path)
-        result = Document.from_file(abs_path)
+        result = Document.FromFile(abs_path)
         assert isinstance(result, pyVHDLModel.Document)
         entities = list(result.Entities.values())
         assert len(entities) > 0
@@ -107,7 +107,7 @@ class TestVHDLParser:
         original_cwd = os.getcwd()
         try:
             os.chdir(self.fixture_dir)
-            result = Document.from_file('life_signs.vhd')
+            result = Document.FromFile('life_signs.vhd')
             assert isinstance(result, pyVHDLModel.Document)
             entities = list(result.Entities.values())
             assert len(entities) > 0
@@ -129,7 +129,7 @@ class TestVHDLParser:
         end entity;
         """
         
-        result = Document.from_string(vhdl_code)
+        result = Document.FromStr(vhdl_code)
         assert isinstance(result, pyVHDLModel.Document)
         
         entities = list(result.Entities.values())
@@ -150,7 +150,7 @@ class TestVHDLParser:
         """
         
         with pytest.raises(VHDLSyntaxError) as exc_info:
-            Document.from_string(invalid_vhdl)
+            Document.FromStr(invalid_vhdl)
         
         assert "Syntax error" in str(exc_info.value)
 
@@ -170,7 +170,7 @@ class TestVHDLParser:
         end package test_pkg;
         """
         
-        result = Document.from_string(vhdl_code)
+        result = Document.FromStr(vhdl_code)
         assert isinstance(result, pyVHDLModel.Document)
         
         # Check packages
