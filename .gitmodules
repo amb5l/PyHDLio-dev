@@ -1,6 +1,6 @@
 [submodule "PyHDLio"]
 	path = PyHDLio
 	url = https://github.com/amb5l/PyHDLio.git
-[submodule "pyVHDLModel"]
-	path = pyVHDLModel
-	url = https://github.com/amb5l/pyVHDLModel.git
+[submodule "PyHDLioVHDLModel"]
+	path = PyHDLioVHDLModel
+	url = https://github.com/amb5l/PyHDLioVHDLModel.git

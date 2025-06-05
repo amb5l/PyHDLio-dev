@@ -2,7 +2,7 @@
 
 # Local packages (editable installs)
 -e ./PyHDLio
--e ./pyVHDLModel
+-e ./PyHDLioVHDLModel
 
 # Core dependencies for PyHDLio
 antlr4-python3-runtime>=4.13.2
