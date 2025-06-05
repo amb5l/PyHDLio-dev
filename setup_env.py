@@ -9,15 +9,6 @@ import sys
 import os
 from pathlib import Path
 
-# Fix encoding issues on Windows
-if sys.platform == "win32" and hasattr(sys.stdout, 'detach'):
-    try:
-        import codecs
-        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
-        sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
-    except:
-        # If encoding fix fails, continue without emojis
-        pass
 
 def run_command(cmd, description=None):
     """Run a command and handle errors."""
@@ -91,8 +82,8 @@ def verify_installation():
 
     # Test basic imports
     imports_to_test = [
-        "from hdlio.vhdl.model import VHDLAST, VHDLSyntaxError",
-        "from hdlio.vhdl.ast import Entity, Generic, Port, PortGroup",
+        "from pyhdlio.vhdl.model import VHDLAST, VHDLSyntaxError",
+        "from pyhdlio.vhdl.ast import Entity, Generic, Port, PortGroup",
     ]
 
     for test_import in imports_to_test:

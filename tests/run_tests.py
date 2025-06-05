@@ -8,11 +8,7 @@ import unittest
 import sys
 import os
 
-# Fix encoding issues on Windows
-if sys.platform == "win32":
-    import codecs
-    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
-    sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
+
 
 # Add PyHDLio package to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'PyHDLio'))
@@ -40,24 +36,24 @@ def create_test_suite():
 
 def run_tests(verbosity=2):
     """Run all tests with specified verbosity."""
-    print("🧪 PyHDLio Integration Test Suite")
+    print("PyHDLio Integration Test Suite")
     print("=" * 50)
 
     # Check dependencies
     try:
         from pyVHDLModel.DesignUnit import Entity as PyVHDLModelEntity
-        print("✅ pyVHDLModel available - full test suite will run")
+        print("OK: pyVHDLModel available - full test suite will run")
     except ImportError:
-        print("⚠️  pyVHDLModel not available - some tests will be skipped")
+        print("WARNING: pyVHDLModel not available - some tests will be skipped")
 
     # Check test files
     simple_vhdl = os.path.join(
         os.path.dirname(__file__), '..', 'PyHDLio', 'examples', 'vhdl', 'simple', 'simple.vhd'
     )
     if os.path.exists(simple_vhdl):
-        print("✅ Test VHDL files found")
+        print("OK: Test VHDL files found")
     else:
-        print("⚠️  Test VHDL files missing - some tests will be skipped")
+        print("WARNING: Test VHDL files missing - some tests will be skipped")
 
     print()
 
@@ -68,31 +64,31 @@ def run_tests(verbosity=2):
 
     # Summary
     print("\n" + "=" * 50)
-    print("🎯 Test Results Summary:")
+    print("Test Results Summary:")
     print(f"   Tests run: {result.testsRun}")
     print(f"   Failures: {len(result.failures)}")
     print(f"   Errors: {len(result.errors)}")
     print(f"   Skipped: {len(result.skipped)}")
 
     if result.failures:
-        print("\n❌ Failures:")
+        print("\nFailures:")
         for test, traceback in result.failures:
             print(f"   - {test}: {traceback.split(chr(10))[-2]}")
 
     if result.errors:
-        print("\n🔥 Errors:")
+        print("\nErrors:")
         for test, traceback in result.errors:
             print(f"   - {test}: {traceback.split(chr(10))[-2]}")
 
     if result.skipped:
-        print(f"\n⏭️  Skipped {len(result.skipped)} tests (missing dependencies/files)")
+        print(f"\nSkipped {len(result.skipped)} tests (missing dependencies/files)")
 
     # Overall result
     if result.wasSuccessful():
-        print("\n🎉 All tests passed!")
+        print("\nAll tests passed!")
         return True
     else:
-        print("\n💥 Some tests failed!")
+        print("\nSome tests failed!")
         return False
 
 def main():
