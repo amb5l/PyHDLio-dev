@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'PyHDLio'))
 
 from pyhdlio.vhdl.model import VHDLAST, Document, VHDLSyntaxError
-from tests.utils.reporter import report_entities
+from utils.reporter import report_entities
 
 # Try to import pyVHDLModel for extended tests
 try:
@@ -111,7 +111,7 @@ class TestFullIntegration(unittest.TestCase):
             VHDLAST.from_file("nonexistent.vhd")
 
         # Test syntax error
-        invalid_vhdl = "entity bad_syntax is port ( clk : in std_logic ); end entity;"
+        invalid_vhdl = "entity bad_syntax is port ( clk in std_logic invalid_syntax ); end entity;"
         with self.assertRaises(VHDLSyntaxError):
             VHDLAST.from_string(invalid_vhdl)
 

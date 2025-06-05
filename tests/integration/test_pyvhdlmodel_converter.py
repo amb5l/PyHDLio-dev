@@ -99,13 +99,13 @@ class TestPyVHDLModelConverter(unittest.TestCase):
         self.assertEqual(len(converted_entity.PortGroups), 2)
 
         # Group 1 should have clk and reset
-        group1_ports = [p.Identifiers[0] for p in converted_entity.PortGroups[0].Ports]
+        group1_ports = [p.Identifiers[0] for p in converted_entity.PortGroups[0].PortItems]
         self.assertEqual(len(group1_ports), 2)
         self.assertIn("clk", group1_ports)
         self.assertIn("reset", group1_ports)
 
         # Group 2 should have start and count
-        group2_ports = [p.Identifiers[0] for p in converted_entity.PortGroups[1].Ports]
+        group2_ports = [p.Identifiers[0] for p in converted_entity.PortGroups[1].PortItems]
         self.assertEqual(len(group2_ports), 2)
         self.assertIn("start", group2_ports)
         self.assertIn("count", group2_ports)
